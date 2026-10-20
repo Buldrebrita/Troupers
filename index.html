@@ -5,6 +5,7 @@
 <title>Troupers</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -695,6 +696,44 @@ if(!(window.claude&&window.claude.use)){(function(){
     if(window.firebase&&firebase.initializeApp){
       firebase.initializeApp({apiKey:"AIzaSyCeGTPGda-1ZUKh6tpTkigWxH3lUUTxk7U",authDomain:"troupers-8d615.firebaseapp.com",projectId:"troupers-8d615",storageBucket:"troupers-8d615.firebasestorage.app",messagingSenderId:"33706381801",appId:"1:33706381801:web:1d718d9de03c41e417bb78"});
       const fs=firebase.firestore();fs.settings({ignoreUndefinedProperties:true});api.db=fs;
+      const auth=firebase.auth();let cur=null,done=false,registering=false,ov=null,resolveAuth;
+      const authReady=new Promise(r=>{resolveAuth=r;});
+      const finish=u=>{if(done)return;done=true;cur=u;try{ov&&ov.remove();}catch(_){}
+        const nm=u.displayName||(u.email||'Eg').split('@')[0];
+        fs.doc('hsm241/main/people/'+u.uid).set({name:nm},{merge:true}).catch(()=>{});resolveAuth(u);};
+      const msg=c=>({'auth/invalid-email':'E-postadressa ser ikkje riktig ut.','auth/missing-password':'Skriv inn passord.','auth/weak-password':'Passordet må ha minst 6 teikn.','auth/email-already-in-use':'Det finst alt ein brukar med denne e-posten.','auth/invalid-credential':'Feil e-post eller passord.','auth/wrong-password':'Feil e-post eller passord.','auth/user-not-found':'Feil e-post eller passord.','auth/too-many-requests':'For mange forsøk. Vent litt og prøv att.','auth/operation-not-allowed':'E-post/passord er ikkje slått på i Firebase enno.','auth/network-request-failed':'Ingen nettverkskontakt.'}[c]||'Noko gjekk gale ('+c+').');
+      const showLogin=()=>{
+        if(ov)return;let reg=false;
+        const st=(el,css)=>{el.style.cssText=css;return el;};
+        const mk=(t,css,txt)=>{const e=document.createElement(t);if(css)e.style.cssText=css;if(txt)e.textContent=txt;return e;};
+        ov=mk('div','position:fixed;inset:0;z-index:9999;background:var(--bg,#FFFDF6);display:grid;place-items:center;padding:16px');
+        const box=mk('form','width:min(380px,100%);display:flex;flex-direction:column;gap:12px;background:var(--surface,#fff);border:2.5px solid var(--edge,#272733);border-radius:18px;padding:24px;box-shadow:4px 4px 0 var(--edge,#272733)');
+        const h1=mk('h1','margin:0;font:400 34px var(--f-display,serif)','Troupers');
+        const sub=mk('p','margin:0;color:var(--muted,#666)','Logg inn for å bruke HSM241.');
+        const inp=(ph,type,ac)=>{const i=mk('input','font:inherit;padding:10px 12px;border:2px solid var(--edge,#272733);border-radius:10px;background:var(--bg,#fff);color:inherit');i.placeholder=ph;i.type=type;i.autocomplete=ac;return i;};
+        const nm=inp('Namn','text','name');nm.hidden=true;
+        const em=inp('E-post','email','email'),pw=inp('Passord','password','current-password');
+        const err=mk('div','color:#C0305A;min-height:1.2em');
+        const go=mk('button','font:inherit;padding:10px;border:2px solid var(--edge,#272733);border-radius:10px;background:var(--y,#FFE38A);cursor:pointer','Logg inn');go.type='submit';
+        const sw=mk('button','font:inherit;background:none;border:0;text-decoration:underline;cursor:pointer;color:inherit','Ny her? Lag brukar');sw.type='button';
+        sw.onclick=()=>{reg=!reg;nm.hidden=!reg;go.textContent=reg?'Lag brukar':'Logg inn';sw.textContent=reg?'Har du brukar? Logg inn':'Ny her? Lag brukar';pw.autocomplete=reg?'new-password':'current-password';err.textContent='';};
+        box.onsubmit=async e=>{e.preventDefault();err.textContent='';go.disabled=true;
+          try{
+            if(reg){const n=nm.value.trim();if(!n){err.textContent='Skriv inn eit namn.';go.disabled=false;return;}
+              registering=true;const c=await auth.createUserWithEmailAndPassword(em.value.trim(),pw.value);
+              await c.user.updateProfile({displayName:n});registering=false;finish(auth.currentUser);}
+            else{await auth.signInWithEmailAndPassword(em.value.trim(),pw.value);finish(auth.currentUser);}
+          }catch(x){registering=false;err.textContent=msg(x.code);go.disabled=false;}};
+        box.append(h1,sub,nm,em,pw,err,go,sw);ov.append(box);document.body.append(ov);em.focus();};
+      auth.onAuthStateChanged(u=>{if(u&&!registering)finish(u);else if(!u)showLogin();});
+      const pc={};
+      const me2=()=>{const n=cur.displayName||(cur.email||'Eg').split('@')[0];return {id:cur.uid,name:n,avatarUrl:av(n),isMe:true};};
+      api.user={id:async()=>(await authReady).uid,me:async()=>{await authReady;return me2();},can:async()=>true,
+        profiles:async ids=>{await authReady;const o={};
+          await Promise.all(ids.map(async i=>{if(i===cur.uid){o[i]=me2();return;}
+            if(!pc[i]){try{const d=await fs.doc('hsm241/main/people/'+i).get();pc[i]=d.exists?d.data().name:'Ukjend';}catch(_){pc[i]='Ukjend';}}
+            o[i]={id:i,name:pc[i],avatarUrl:av(pc[i]),isMe:false};}));return o;}};
+      window.__logout=()=>auth.signOut().then(()=>location.reload());
     }
   }catch(e){console.error('Firebase feilte, brukar lokal lagring',e);}
   window.claude={use:async n=>api[n]||null,local:true};
@@ -901,7 +940,7 @@ function renderSide(){
     LOCAL?'':h('div',{class:'side-actions'},
       h('button',{class:'btn primary',type:'button',onclick:openNewProject},icon('plus'),'Nytt prosjekt'),
       h('button',{class:'btn',type:'button',onclick:openJoin},icon('users'),'Bli med i prosjekt')),
-    LOCAL?'':h('div',{class:'me'},h('img',{class:'av',src:S.me&&S.me.avatarUrl||'',alt:''}),h('span',null,(S.me&&S.me.name)||'Du'))
+    (LOCAL&&!W.__logout)?'':h('div',{class:'me'},h('img',{class:'av',src:S.me&&S.me.avatarUrl||'',alt:''}),h('span',null,(S.me&&S.me.name)||'Du'),W.__logout?h('button',{class:'btn sm',type:'button',onclick:W.__logout},'Logg ut'):'')
   );
 }
 function renderTop(){
