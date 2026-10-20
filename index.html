@@ -278,7 +278,7 @@ a.link-t{text-decoration:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--blue:#7BA3F5;--green:#6CCB95;--amber:#E6B654;--violet:#A68CF0;--rose:#F08AA3;--slate:#9FB0B8;--teal:#45C9BB}}
 :root[data-theme="dark"]{--blue:#7BA3F5;--green:#6CCB95;--amber:#E6B654;--violet:#A68CF0;--rose:#F08AA3;--slate:#9FB0B8;--teal:#45C9BB}
 .tone-blue{--tc:var(--blue)}.tone-green{--tc:var(--green)}.tone-amber{--tc:var(--amber)}.tone-violet{--tc:var(--violet)}
-.tone-rose{--tc:var(--rose)}.tone-slate{--tc:var(--slate)}.tone-teal{--tc:var(--teal)}
+.tone-orange{--tc:#E0702E}.tone-rose{--tc:var(--rose)}.tone-slate{--tc:var(--slate)}.tone-teal{--tc:var(--teal)}
 .hb{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--tc) 15%,var(--surface));color:var(--tc)}
 .card h3{justify-content:flex-start}
 .card h3 .btn{margin-left:auto}
@@ -638,6 +638,13 @@ button.more{font-size:14px;color:var(--ink)}
 .chap:active{transform:translateY(2px)}
 .bk-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 @media (max-width:640px){.sk-big{font-size:60px}}
+
+.ov-wrap{display:flex;flex-direction:column;gap:18px}
+.ov-card .cal-bar{margin-bottom:12px}
+.ov-cal .day{min-height:96px}
+.ov-cal .dn{white-space:nowrap}
+.ov-card .forest-wrap{margin-top:8px}
+.goal .rows{margin-top:4px}
 </style>
 
 <div id="root"><div class="boot"><h1>Troupers</h1><p class="muted">Lastar …</p></div></div>
@@ -800,6 +807,7 @@ const ICONS={
   ext:'<path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/>',
   tasks:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/>',
   menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
+  target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
   tree:'<path d="M12 21v-6"/><path d="M12 15c-4 0-6-2.5-6-5.5 0-1.4.6-2.6 1.6-3.4C8 4.6 9.8 3 12 3s4 1.6 4.4 3.1c1 .8 1.6 2 1.6 3.4 0 3-2 5.5-6 5.5z"/>',
   home:'<path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-6h4v6"/>',
   copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/>'
@@ -841,7 +849,7 @@ const now0=new Date();
 const S={db:null,user:null,room:null,assets:null,uid:null,me:null,canData:true,
   metas:{},myList:[],myLoaded:false,active:PRIV,tab:'oversikt',
   cal:{sel:ymd(now0),view:(W.innerWidth<700?'dag':'veke'),hide:{ev:false,task:false},scroll:null,lastColor:null},
-  data:{members:{},events:{},tasks:{},items:{},books:{},chapters:{}},loaded:{},openDoc:null,
+  data:{members:{},events:{},tasks:{},items:{},books:{},chapters:{},goals:{},subgoals:{}},loaded:{},openDoc:null,
   taskFilter:'opne',itemFilter:'alle',q:'',editing:null,modal:null,want:null};
 const E={active:false,id:null,unsub:null,rows:new Map(),blocks:new Map(),order:[],pendingFocus:null,pendingCaret:0,
   view:null,list:null,peersEl:null,titleEl:null,metaEl:null,dirty:new Set(),inflight:new Set(),queued:new Set(),timers:new Map(),
@@ -852,7 +860,7 @@ const priv=()=>S.db.doc('data/users/'+S.uid+'/profile');
 const base=id=>(id||S.active)===PRIV?priv():S.db.doc('projects/'+(id||S.active));
 const col=n=>base().collection(n);
 const LOCAL=false;
-function meta(){return S.active===PRIV?LOCAL?{name:'HSM241',desc:'Notat, planar og framdrift for faget.',color:'#6C8FD8'}:{name:'Privat',desc:'Berre du ser det som ligg her.',color:'#6B7A73'}:(S.metas[S.active]||{name:'…',desc:''});}
+function meta(){return S.active===PRIV?LOCAL?{name:'HSM241',desc:'Notat, planar og framdrift for faget.',color:'#6C8FD8'}:{name:'Mi side',desc:'Berre du ser det som ligg her.',color:'#8B6CF0'}:(S.metas[S.active]||{name:'…',desc:''});}
 function role(){if(S.active===PRIV)return 'eigar';const m=S.data.members[S.uid];return m?m.role:null;}
 function perm(){const r=role();const w=!!S.canData&&r!=null;
   return {role:r,write:w&&r!=='lesar',manage:w&&(r==='eigar'||r==='redaktor'),admin:w&&r==='eigar'};}
@@ -899,7 +907,7 @@ function toggleNav(open){const s=$('#side'),c=$('#scrim');if(!s)return;s.classLi
 /* ---------- romval ---------- */
 function unsubscribeSpace(){spaceSubs.forEach(u=>{try{u();}catch(_){}});spaceSubs=[];}
 function subscribeSpace(){
-  const id=S.active;const names=['events','tasks','items','books','chapters'];
+  const id=S.active;const names=['events','tasks','items','books','chapters','goals','subgoals'];
   if(id===PRIV)S.loaded.members=true;else names.push('members');
   for(const n of names){
     const un=base(id).collection(n).onSnapshot(snap=>{
@@ -912,7 +920,7 @@ function subscribeSpace(){
 function switchSpace(id){
   closeDocument(true);unsubscribeSpace();
   S.active=id;S.tab='oversikt';S.openDoc=null;S.editing=null;S.q='';S.itemFilter='alle';
-  S.data={members:{},events:{},tasks:{},items:{},books:{},chapters:{}};S.loaded={};
+  S.data={members:{},events:{},tasks:{},items:{},books:{},chapters:{},goals:{},subgoals:{}};S.loaded={};
   try{localStorage.setItem('samlag.last',id);}catch(_){}
   subscribeSpace();renderAll();
 }
@@ -933,7 +941,7 @@ function renderSide(){
   const ps=S.myList.map(pid=>({pid,m:S.metas[pid]})).sort((a,b)=>String(a.m&&a.m.name||'~').localeCompare(String(b.m&&b.m.name||'~'),'nn'));
   side.replaceChildren(
     h('div',{class:'brand'},logo(),'Troupers'),
-    LOCAL?'':h('div',null,h('div',{class:'sec-h'},'Mi side'),h('div',{class:'sp-list'},spBtn(PRIV,'Privat','','lock'))),
+    h('div',{class:'sp-list'},spBtn(PRIV,'Mi side','#8B6CF0','home')),
     LOCAL?'':h('div',null,h('div',{class:'sec-h'},'Prosjekt'),
       h('div',{class:'sp-list'},ps.length?ps.map(({pid,m})=>spBtn(pid,m===undefined?'…':(m?m.name:'Sletta prosjekt'),m&&m.color)):
         (S.myLoaded?h('p',{class:'side-note'},'Du er ikkje med i nokon prosjekt enno.'):h('p',{class:'side-note'},'Lastar …')))),
@@ -946,12 +954,12 @@ function renderSide(){
 function renderTop(){
   const t=$('#top');const m=meta();const p=perm();const isP=S.active!==PRIV;
   const sub=h('div',{class:'sub'});
-  if(!isP)sub.append(icon(LOCAL?'home':'lock'),m.desc);
+  if(!isP)sub.append(icon('home'),m.desc);
   else{ if(p.role)sub.append(h('span',{class:'pill role-'+p.role},ROLES[p.role]||p.role)); if(m.desc)sub.append(h('span',null,m.desc)); }
   const mc=safeColor(m.color);const mn=$('.main');if(mn)mn.style.setProperty('--pc',mc);
   t.replaceChildren(
     h('button',{class:'icon-btn menu-btn',id:'btn-menu',type:'button','aria-label':'Opne meny',onclick:()=>toggleNav(true)},icon('menu',20)),
-    h('div',{class:'pj',style:'background:'+mc},isP?String(m.name||'?').trim().charAt(0).toUpperCase():icon(LOCAL?'home':'lock',22)),
+    h('div',{class:'pj',style:'background:'+mc},isP?String(m.name||'?').trim().charAt(0).toUpperCase():icon('home',22)),
     h('div',{class:'ttl'},h('h1',null,m.name),sub),
     (isP&&p.admin)?h('button',{class:'btn sm',id:'btn-edit',type:'button',onclick:openEditProject},icon('edit'),'Rediger'):''
   );
@@ -960,7 +968,8 @@ function renderTabs(){
   const t=$('#tabs');
   const open=Object.values(S.data.tasks).filter(x=>!x.done).length;
   const sd=skogStats().done;
-  const defs=[['oversikt','Oversikt','home','slate'],['dokument','Dokument','doc','blue',Object.keys(S.data.items).length],['kalender','Kalender','calendar','rose'],['oppgaver','Oppgåver','tasks','green',open],['skog','Skog','tree','teal',sd]];
+  const gl=Object.keys(S.data.goals||{}).length;
+  const defs=[['oversikt','Oversikt','home','violet'],['dokument','Dokument','doc','blue',Object.keys(S.data.items).length],['kalender','Kalender','calendar','rose'],['oppgaver','Oppgåver','tasks','orange',open],['mal','Mål','target','teal',gl],['skog','Skog','tree','green',sd]];
   if(S.active!==PRIV)defs.push(['folk','Folk','users','amber',Object.keys(S.data.members).length]);
   t.replaceChildren(...defs.map(([k,l,ic,tn,n])=>h('button',{class:'tab tone-'+tn,id:'tab-'+k,type:'button',role:'tab','aria-selected':String(S.tab===k),onclick:()=>setTab(k)},icon(ic,16),l,n?h('span',{class:'n'},String(n)):null)));
 }
@@ -994,6 +1003,7 @@ function buildView(){
   if(S.tab==='dokument')el=viewDokument();
   else if(S.tab==='kalender')el=viewKalender();
   else if(S.tab==='skog')el=viewSkog();
+  else if(S.tab==='mal')el=viewMal();
   else if(S.tab==='oppgaver')el=viewOppgaver();
   else if(S.tab==='folk'&&S.active!==PRIV)el=viewFolk();
   else el=viewOversikt();
@@ -1072,7 +1082,7 @@ async function leaveProject(){
 }
 async function removeProject(pid){
   const b=S.db.doc('projects/'+pid);
-  for(const n of ['events','tasks','books','chapters']){const s=await b.collection(n).get();for(const d of s.docs)await b.collection(n).doc(d.id).delete();}
+  for(const n of ['events','tasks','books','chapters','goals','subgoals']){const s=await b.collection(n).get();for(const d of s.docs)await b.collection(n).doc(d.id).delete();}
   const its=await b.collection('items').get();
   for(const d of its.docs){
     const bc=b.collection('items').doc(d.id).collection('blocks');const bs=await bc.get();
@@ -1345,39 +1355,122 @@ function itemSub(it){
 }
 
 /* ---------- oversikt ---------- */
-function viewOversikt(){
-  const t0=todayS();const lim=ymd(new Date(Date.now()+14*86400000));
-  const coming=[];
-  eventsArr().forEach(e=>{if(e.date&&evEnd(e)>=t0&&e.date<=lim)coming.push({k:'ev',date:e.date<t0?t0:e.date,time:e.time||'',title:e.title,color:e.color});});
-  tasksArr().forEach(t=>{if(!t.done&&t.due&&t.due<=lim)coming.push({k:'task',date:t.due,time:'',title:t.title,over:t.due<t0,who:t.assignee});});
-  coming.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
-  const myTasks=tasksArr().filter(t=>!t.done&&t.assignee===S.uid).sort((a,b)=>(a.due||'9').localeCompare(b.due||'9')).slice(0,6);
-  const recent=itemsArr().sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0)).slice(0,6);
-  const goCal=d=>{S.cal.sel=d;setTab('kalender');};
-  const c1=h('section',{class:'card'},h('h3',null,hb('calendar','blue'),'Dei neste to vekene'),
-    coming.length?h('div',{class:'rows'},coming.slice(0,8).map(c=>{const d=parseYmd(c.date);
-      return h('div',{class:'r'},h('div',{class:'dt'+(c.over?' over':'')+(c.k==='ev'?' ev':''),style:c.k==='ev'?'--ec:'+evColor(c.color):null},h('b',null,String(d.getDate())),h('i',null,MON_S[d.getMonth()])),
-        h('div',{class:'t'},h('button',{class:'link-t',type:'button',onclick:()=>goCal(c.date)},c.title),
-          h('div',{class:'s'},c.k==='ev'?(c.time?'Kl. '+c.time:'Hending'):(c.over?'Oppgåve · forfalle':'Oppgåve'))));}))
-    :h('p',{class:'empty'},'Ingen hendingar eller frister dei neste to vekene.'));
-  const c2=h('section',{class:'card'},h('h3',null,hb('tasks','green'),'Mine oppgåver',h('button',{class:'btn ghost sm',type:'button',onclick:()=>{S.taskFilter='mine';setTab('oppgaver');}},'Sjå alle')),
-    myTasks.length?h('div',{class:'rows'},myTasks.map(t=>h('div',{class:'r'},
-      h('input',{type:'checkbox','aria-label':'Ferdig',disabled:!perm().write,onchange:ev=>setTaskDone(t.id,ev.target.checked)}),
-      h('div',{class:'t'},t.title,t.due?h('div',{class:'s'},'Frist '+fmtShort(t.due)):null))))
-    :h('p',{class:'empty'},S.active===PRIV?'Ingen opne oppgåver.':'Ingen oppgåver er tildelt deg.'));
-  const c3=h('section',{class:'card'},h('h3',null,hb('doc','violet'),'Sist endra',h('button',{class:'btn ghost sm',type:'button',onclick:()=>setTab('dokument')},'Alle dokument')),
-    recent.length?h('div',{class:'rows'},recent.map(it=>h('div',{class:'r'},h('span',{class:'ic tone-'+itemTone(it),style:'color:var(--tc)'},icon(itemIcon(it))),
-      h('div',{class:'t'},itemTitleEl(it),h('div',{class:'s'},itemSub(it)+' · '+relTime(it.updatedAt||it.createdAt))))))
-    :h('div',null,h('p',{class:'empty'},'Her er ingenting enno.'),perm().write?h('button',{class:'btn sm',type:'button',onclick:createDoc},icon('plus'),'Lag eit dokument'):null));
-  const cards=[c1,c2,c3];
-  if(S.active!==PRIV){
-    const mem=Object.keys(S.data.members);
-    cards.push(h('section',{class:'card'},h('h3',null,hb('users','amber'),'Folk',h('button',{class:'btn ghost sm',type:'button',onclick:()=>setTab('folk')},'Hald orden')),
-      h('div',{class:'rows'},mem.slice(0,6).map(u=>h('div',{class:'r'},whoChip(u,true),h('span',{class:'pill role-'+S.data.members[u].role,style:'margin-left:auto'},ROLES[S.data.members[u].role]||'')))),
-      mem.length>6?h('p',{class:'s muted'},'og '+(mem.length-6)+' til'):null));
+const OV={weeks:2,start:null};
+try{const w=parseInt(localStorage.getItem('troupers.weeks'),10);if(w>=1&&w<=5)OV.weeks=w;}catch(_){}
+function ovGrid(){
+  const t0=todayS();const p=perm();const by=itemsByDate();const ws0=weekStart(OV.start||t0);
+  const grid=h('div',{class:'cal ov-cal',role:'grid'});
+  grid.append(h('div',{class:'hd',style:'text-align:center;padding:10px 0'},'Vk'),...DAYS_SHORT.map(d=>h('div',{class:'hd'},d)));
+  for(let w=0;w<OV.weeks;w++){
+    const ws=addDays(ws0,w*7);
+    grid.append(h('button',{type:'button',class:'wk',style:'border:0;cursor:pointer','aria-label':'Opne veke '+isoWeek(parseYmd(ws)),
+      onclick:()=>{S.cal.sel=ws;S.cal.view='veke';setTab('kalender');}},String(isoWeek(parseYmd(ws)))));
+    for(let i=0;i<7;i++){
+      const s=addDays(ws,i);const d=parseYmd(s);const its=by[s]||[];
+      const lab=(d.getDate()===1||(w===0&&i===0))?d.getDate()+'. '+MON_S[d.getMonth()]:String(d.getDate());
+      grid.append(h('div',{role:'gridcell',class:'day'+(s===t0?' today':''),
+        onclick:()=>{S.cal.sel=s;if(p.write)openEventModal(null,{date:s});else{S.cal.view='dag';setTab('kalender');}}},
+        h('button',{type:'button',class:'dn','aria-label':fmtLong(s),onclick:e=>{e.stopPropagation();S.cal.sel=s;S.cal.view='dag';setTab('kalender');}},lab),
+        h('div',{class:'chips'},its.slice(0,4).map(chipEl),
+          its.length>4?h('button',{type:'button',class:'more',onclick:e=>{e.stopPropagation();S.cal.sel=s;S.cal.view='dag';setTab('kalender');}},'+'+(its.length-4)+' til'):null)));
+    }
   }
-  if(Object.keys(S.data.books).length)cards.push(skogMini());
-  return h('div',{class:'grid-c'},cards);
+  return grid;
+}
+function ovRange(){
+  const a=weekStart(OV.start||todayS()),b=addDays(a,OV.weeks*7-1);const da=parseYmd(a),db=parseYmd(b);
+  return da.getDate()+'. '+MON_S[da.getMonth()]+' – '+db.getDate()+'. '+MON_S[db.getMonth()]+' '+db.getFullYear();
+}
+function skogScene(st){
+  const sk=skogState();
+  const scene=h('div',{class:'forest-wrap'},h('div',{class:'forest forest-in'}));
+  const inner=scene.firstChild;inner.innerHTML=forestSvg(st);
+  inner.querySelectorAll('.slot').forEach(g=>{
+    const go=()=>slotClick(g.dataset.bid,parseInt(g.dataset.n,10));
+    g.addEventListener('click',go);
+    g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});
+  });
+  Object.keys(S.data.chapters).forEach(k=>sk.seen.add(k));
+  return scene;
+}
+function viewOversikt(){
+  const p=perm();
+  const bar=h('div',{class:'cal-bar'},
+    h('button',{class:'btn',type:'button',onclick:()=>{OV.start=null;renderView();}},'I dag'),
+    h('div',{class:'row',style:'gap:2px;flex-wrap:nowrap'},
+      h('button',{class:'icon-btn',type:'button','aria-label':'Førre veke',onclick:()=>{OV.start=addDays(weekStart(OV.start||todayS()),-7);renderView();}},icon('chev-l')),
+      h('button',{class:'icon-btn',type:'button','aria-label':'Neste veke',onclick:()=>{OV.start=addDays(weekStart(OV.start||todayS()),7);renderView();}},icon('chev-r'))),
+    h('h2',null,ovRange()),
+    h('div',{class:'row',style:'gap:8px;align-items:center'},h('span',{class:'muted'},'Veker:'),
+      h('div',{class:'seg',role:'group','aria-label':'Tal veker'},[1,2,3,4,5].map(n=>
+        h('button',{type:'button','aria-pressed':String(OV.weeks===n),onclick:()=>{OV.weeks=n;try{localStorage.setItem('troupers.weeks',String(n));}catch(_){}renderView();}},String(n))))),
+    p.write?h('button',{class:'btn primary',type:'button',onclick:()=>openEventModal(null,newEventDefaults())},icon('plus'),'Ny hending'):null);
+  const calCard=h('section',{class:'card ov-card'},bar,ovGrid());
+  let forest;
+  const st=skogStats();
+  if(st.books.length){
+    const pct=st.total?Math.round(st.done/st.total*100):0;
+    forest=h('section',{class:'card ov-card'},h('h3',null,hb('tree','green'),'Skogen',h('button',{class:'btn ghost sm',type:'button',onclick:()=>setTab('skog')},'Opne')),
+      skogScene(st),
+      h('div',{class:'row',style:'gap:12px;margin-top:10px;align-items:center'},h('b',{style:'font:400 28px var(--f-display)'},st.done+' av '+st.total),
+        h('div',{class:'bar grow'},h('i',{style:'width:'+pct+'%'})),h('span',{class:'muted'},pct+' %')));
+  }else{
+    forest=h('section',{class:'card ov-card'},h('h3',null,hb('tree','green'),'Skogen'),
+      h('p',{class:'empty'},'Legg inn bøkene de les. For kvart kapittel de blir ferdige med, veks det eit tre.'),
+      p.manage?h('button',{class:'btn primary',type:'button',onclick:()=>setTab('skog')},icon('plus'),'Kom i gang med skogen'):null);
+  }
+  return h('div',{class:'ov-wrap'},calCard,forest);
+}
+
+/* ---------- mål ---------- */
+function goalsArr(){return Object.entries(S.data.goals||{}).map(([id,g])=>Object.assign({id},g)).sort((a,b)=>(a.order||a.createdAt||0)-(b.order||b.createdAt||0));}
+function subsOf(gid){return Object.entries(S.data.subgoals||{}).map(([id,x])=>Object.assign({id},x)).filter(x=>x.goal===gid).sort((a,b)=>(a.order||a.createdAt||0)-(b.order||b.createdAt||0));}
+async function addGoal(inp){
+  const t=inp.value.trim();if(!t)return;inp.value='';
+  try{const n=Date.now();await col('goals').add({title:t,order:n,createdBy:S.uid,createdAt:n});}catch(e){fail(e);}
+}
+async function addSub(gid,inp){
+  const t=inp.value.trim();if(!t)return;inp.value='';
+  try{const n=Date.now();await col('subgoals').add({goal:gid,title:t,done:false,order:n,createdBy:S.uid,createdAt:n});}catch(e){fail(e);}
+}
+async function toggleSub(id,done){try{await col('subgoals').doc(id).update({done:!!done,doneAt:done?Date.now():0,doneBy:done?S.uid:''});}catch(e){fail(e);}}
+async function delSub(id){try{await col('subgoals').doc(id).delete();}catch(e){fail(e);}}
+async function delGoal(g){
+  if(!(await confirmBox('Slette målet «'+g.title+'»?','Delmåla under målet blir sletta òg.','Slett')))return;
+  try{for(const x of subsOf(g.id))await col('subgoals').doc(x.id).delete();await col('goals').doc(g.id).delete();}catch(e){fail(e);}
+}
+function renameGoal(g,el){
+  const v=el.value.trim();if(!v||v===g.title)return;
+  col('goals').doc(g.id).update({title:v}).catch(e=>fail(e));
+}
+function addRow(ph,btn,fn){
+  const inp=h('input',{type:'text',placeholder:ph,'aria-label':ph,style:'flex:1;min-width:0'});
+  const go=()=>fn(inp);
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go();}});
+  return h('div',{class:'row',style:'gap:8px;margin-top:10px'},inp,h('button',{class:'btn sm',type:'button',onclick:go},icon('plus'),btn));
+}
+function viewMal(){
+  const p=perm();
+  if(!S.loaded.goals||!S.loaded.subgoals)return h('p',{class:'muted'},'Lastar …');
+  const gs=goalsArr();
+  const head=h('section',{class:'card'},h('h3',null,hb('target','teal'),'Mål og delmål'),
+    h('p',{class:'muted',style:'margin:0'},'Set eit mål for prosjektet, og del det opp i delmål du kan krysse av.'),
+    p.write?addRow('Nytt mål, til dømes «Levere eksamen»','Legg til mål',addGoal):null);
+  const cards=gs.map(g=>{
+    const subs=subsOf(g.id);const d=subs.filter(x=>x.done).length;const pct=subs.length?Math.round(d/subs.length*100):0;
+    const rows=subs.map(x=>h('div',{class:'r'},
+      h('input',{type:'checkbox','aria-label':'Ferdig',checked:!!x.done,disabled:!p.write,onchange:ev=>toggleSub(x.id,ev.target.checked)}),
+      h('div',{class:'t'},h('span',{style:x.done?'text-decoration:line-through;opacity:.6':''},x.title),
+        x.done&&x.doneBy?h('div',{class:'s'},'Ferdig ',whoChip(x.doneBy,false)):null),
+      canDel(x)?h('button',{class:'icon-btn',type:'button','aria-label':'Slett delmål',onclick:()=>delSub(x.id)},icon('trash',16)):null));
+    return h('section',{class:'card goal'},
+      h('h3',null,hb('target','teal'),g.title,canDel(g)?h('button',{class:'btn ghost sm',type:'button',onclick:()=>delGoal(g)},icon('trash',14),'Slett'):null),
+      h('div',{class:'bar'},h('i',{style:'width:'+pct+'%'})),
+      h('p',{class:'s muted',style:'margin:6px 0 8px'},subs.length?d+' av '+subs.length+' delmål ferdige':'Ingen delmål enno'),
+      rows.length?h('div',{class:'rows'},rows):null,
+      p.write?addRow('Nytt delmål','Legg til delmål',inp=>addSub(g.id,inp)):null);
+  });
+  return h('div',{class:'ov-wrap'},head,cards.length?cards:h('p',{class:'empty'},'Ingen mål enno.'));
 }
 
 /* ---------- dokument ---------- */
@@ -1560,7 +1653,7 @@ function monthView(){
   const off=(new Date(y,m,1).getDay()+6)%7;const dim=new Date(y,m+1,0).getDate();const weeks=Math.ceil((off+dim)/7);
   const by=itemsByDate();
   const grid=h('div',{class:'cal',role:'grid'});
-  grid.append(h('div',{class:'hd',style:'text-align:center;padding:10px 0'},'Vk'),DAYS_SHORT.map(d=>h('div',{class:'hd'},d)));
+  grid.append(h('div',{class:'hd',style:'text-align:center;padding:10px 0'},'Vk'),...DAYS_SHORT.map(d=>h('div',{class:'hd'},d)));
   for(let w=0;w<weeks;w++){
     const ws=ymd(new Date(y,m,1-off+w*7));
     grid.append(h('button',{type:'button',class:'wk',style:'border:0;cursor:pointer','aria-label':'Opne veke '+isoWeek(parseYmd(ws)),
