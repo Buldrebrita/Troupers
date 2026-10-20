@@ -783,6 +783,10 @@ input[type=checkbox]:focus-visible{outline:3px solid var(--accent);outline-offse
 .postit{min-height:70px;height:80px}
 .mc-d{font-size:12px;padding:1px 0}.mc-n b{font-size:15px}
 .wd.choose{padding:6px}
+.pj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:8px}
+.pj-card{display:flex;align-items:center;gap:8px;text-align:left;border:2px solid var(--edge);border-radius:var(--wob-s);background:color-mix(in srgb,var(--pc) 22%,var(--surface));padding:10px 12px;font:400 18px var(--f-display);color:var(--ink);box-shadow:2px 2px 0 var(--edge)}
+.pj-card .dot{width:12px;height:12px;border-radius:50%;flex:none}.pj-card .nm{flex:1}.pj-card .muted{font:400 14px var(--f-body)}
+.pj-card:hover{background:color-mix(in srgb,var(--pc) 38%,var(--surface))}
 </style>
 
 <div id="root"><div class="boot"><h1>Troupers</h1><p class="muted">Lastar …</p></div></div>
@@ -1123,6 +1127,7 @@ function switchSpace(id){
   S.active=id;S.tab='oversikt';S.openDoc=null;S.editing=null;S.q='';S.itemFilter='alle';
   S.data={members:{},events:{},tasks:{},items:{},books:{},chapters:{},goals:{},subgoals:{},messages:{},notifs:{}};S.loaded={};
   try{localStorage.setItem('samlag.last',id);}catch(_){}
+  if(id!==PRIV)noteRecent(id);
   subscribeSpace();renderAll();
 }
 function dataChanged(n){if(n==='items'&&E.active)updateEditorMeta();scheduleRender();}
@@ -1133,6 +1138,19 @@ function setTab(t){if(S.openDoc&&t!=='dokument')closeDocument(true);if(S.openDoc
 /* ---------- sidekolonne, topp, faner ---------- */
 function logo(){const s=document.createElement('span');s.className='ic';
   s.innerHTML='<svg viewBox="0 0 34 26" width="34" height="26" aria-hidden="true"><circle cx="11" cy="13" r="9" style="fill:var(--bl);stroke:var(--edge)" stroke-width="2.4"/><circle cx="22" cy="13" r="9" style="fill:var(--pk);stroke:var(--edge)" stroke-width="2.4"/></svg>';return s;}
+const RECENT_N=4;
+function recentIds(){let a=[];try{a=JSON.parse(localStorage.getItem('troupers.recent'))||[];}catch(_){}return Array.isArray(a)?a:[];}
+function noteRecent(id){try{localStorage.setItem('troupers.recent',JSON.stringify([id].concat(recentIds().filter(x=>x!==id)).slice(0,20)));}catch(_){}}
+function projCard(pid,m){
+  return h('button',{class:'pj-card',type:'button',style:'--pc:'+safeColor(m&&m.color||'#5E6E78'),onclick:()=>switchSpace(pid)},
+    h('i',{class:'dot',style:'background:'+safeColor(m&&m.color)}),h('span',{class:'nm'},m===undefined?'…':(m?m.name:'Sletta prosjekt')),
+    (m&&m.status==='ferdig')?h('span',{class:'muted'},'Ferdig'):null,unreadCount(pid)?h('span',{class:'n'},String(unreadCount(pid))):null);
+}
+function projSection(){
+  const ids=S.myList.slice().sort((a,b)=>String(S.metas[a]&&S.metas[a].name||'~').localeCompare(String(S.metas[b]&&S.metas[b].name||'~'),'nn'));
+  return h('section',{class:'card ov-card'},h('h3',null,hb('home','blue'),'Prosjekt',h('button',{class:'btn primary sm',type:'button',onclick:openProjectChoice},icon('plus',14),'Nytt prosjekt')),
+    ids.length?h('div',{class:'pj-grid'},ids.map(pid=>projCard(pid,S.metas[pid]))):h('p',{class:'empty'},S.myLoaded?'Du er ikkje med i nokon prosjekt enno.':'Lastar …'));
+}
 function spBtn(id,name,color,ic,badge){
   return h('button',{class:'sp',style:'--pc:'+safeColor(color||'#5E6E78'),type:'button','aria-current':String(S.active===id),onclick:()=>{if(S.active!==id)switchSpace(id);toggleNav(false);}},
     ic?icon(ic):h('i',{class:'dot',style:'background:'+safeColor(color)}),h('span',{class:'nm'},name),badge?h('span',{class:'n'},String(badge)):null);
@@ -1140,7 +1158,10 @@ function spBtn(id,name,color,ic,badge){
 function renderSide(){
   const side=$('#side');if(!side)return;
   const all=S.myList.map(pid=>({pid,m:S.metas[pid]})).sort((a,b)=>String(a.m&&a.m.name||'~').localeCompare(String(b.m&&b.m.name||'~'),'nn'));
-  const ps=all.filter(x=>!(x.m&&x.m.status==='ferdig')),fin=all.filter(x=>x.m&&x.m.status==='ferdig');
+  const act=all.filter(x=>!(x.m&&x.m.status==='ferdig'));const rec=recentIds();
+  const rank=x=>{const i=rec.indexOf(x.pid);return i<0?99:i;};
+  const ps=act.slice().sort((a,b)=>rank(a)-rank(b)).slice(0,RECENT_N);
+  const more=act.length>ps.length,fin=[];
   const pb=({pid,m})=>spBtn(pid,m===undefined?'…':(m?m.name:'Sletta prosjekt'),m&&m.color,null,unreadCount(pid));
   side.replaceChildren(
     h('div',{class:'brand'},logo(),'Troupers'),
@@ -1148,7 +1169,7 @@ function renderSide(){
     h('div',null,h('div',{class:'sec-h'},'Prosjekt'),
       h('div',{class:'sp-list'},ps.length?ps.map(pb):
         (S.myLoaded?h('p',{class:'side-note'},'Du er ikkje med i nokon prosjekt enno.'):h('p',{class:'side-note'},'Lastar …'))),
-      h('button',{class:'btn sm add-pj',type:'button',onclick:openProjectChoice},icon('plus',14),'Nytt prosjekt')),
+      more?h('button',{class:'btn ghost sm add-pj',type:'button',onclick:()=>{if(S.active!==PRIV)switchSpace(PRIV);toggleNav(false);}},'Alle prosjekt ('+all.length+')'):''),
     fin.length?h('div',null,h('div',{class:'sec-h'},'Ferdige prosjekt'),h('div',{class:'sp-list'},fin.map(pb))):'',
     refreshWidgets(false)
   );
@@ -1676,7 +1697,7 @@ function viewOversikt(){
       h('p',{class:'empty'},'Legg inn bøkene de les. For kvart kapittel de blir ferdige med, veks det eit tre.'),
       p.manage?h('button',{class:'btn primary',type:'button',onclick:()=>setTab('skog')},icon('plus'),'Kom i gang med skogen'):null);
   }
-  return h('div',{class:'ov-wrap'},nytSection(),calCard,forest);
+  return h('div',{class:'ov-wrap'},S.active===PRIV?projSection():'',nytSection(),calCard,forest);
 }
 
 /* ---------- mål (slått saman med oppgåver) ---------- */
@@ -2804,7 +2825,7 @@ setInterval(()=>{WID.tick.forEach(f=>{try{f();}catch(_){}});},500);
 
 /* ---------- språk (norsk/engelsk) ---------- */
 const EN={'Mi side':'My page','Oversikt':'Overview','Dokument':'Documents','Kalender':'Calendar','Mål':'Goals','Skog':'Forest','Meldingar':'Messages','Innstillingar':'Settings',
-'Prosjekt':'Projects','Nytt prosjekt':'New project','Bli med i prosjekt':'Join a project','Logg ut':'Log out','Logg inn':'Log in','Lag brukar':'Create account','Ny her? Lag brukar':'New here? Create account','Har du brukar? Logg inn':'Have an account? Log in',
+'Prosjekt':'Projects','Nytt prosjekt':'New project','Alle prosjekt':'All projects','Ferdig':'Done','Bli med i prosjekt':'Join a project','Logg ut':'Log out','Logg inn':'Log in','Lag brukar':'Create account','Ny her? Lag brukar':'New here? Create account','Har du brukar? Logg inn':'Have an account? Log in',
 'Du er ikkje med i nokon prosjekt enno.':'You are not in any projects yet.','Lastar …':'Loading …','Berre du ser det som ligg her.':'Only you can see what is here.',
 'I dag':'Today','Veker:':'Weeks:','Ny hending':'New event','Dag':'Day','Veke':'Week','Månad':'Month','Hendingar':'Events','Mål ':'Goals ','Ingenting':'Nothing','Førre':'Previous','Neste':'Next','Førre veke':'Previous week','Neste veke':'Next week',
 'Heile dagen':'All day','Avslått':'Declined','Avslå':'Decline','Eg er med likevel':'I will join after all','Du er med.':'You are attending.','Du har avslått.':'You have declined.','Kven er med?':'Who is attending?','Alle':'Everyone','Ingen':'None','Farge':'Colour','Merknad':'Note','Merknad (valfritt)':'Note (optional)','Legg til tittel':'Add title','Tittel':'Title','Dato':'Date','Frist':'Due date','Ansvarleg':'Responsible','Ferdig':'Done','Slett':'Delete','Avbryt':'Cancel','Lagre':'Save','Lukk':'Close','Rediger':'Edit','Hending':'Event','Til og med (valfritt)':'Until (optional)',
