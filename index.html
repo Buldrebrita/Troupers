@@ -700,7 +700,7 @@ if(!(window.claude&&window.claude.use)){(function(){
       const authReady=new Promise(r=>{resolveAuth=r;});
       const finish=u=>{if(done)return;done=true;cur=u;try{ov&&ov.remove();}catch(_){}
         const nm=u.displayName||(u.email||'Eg').split('@')[0];
-        fs.doc('hsm241/main/people/'+u.uid).set({name:nm},{merge:true}).catch(()=>{});resolveAuth(u);};
+        fs.doc('people/'+u.uid).set({name:nm},{merge:true}).catch(()=>{});resolveAuth(u);};
       const msg=c=>({'auth/invalid-email':'E-postadressa ser ikkje riktig ut.','auth/missing-password':'Skriv inn passord.','auth/weak-password':'Passordet må ha minst 6 teikn.','auth/email-already-in-use':'Det finst alt ein brukar med denne e-posten.','auth/invalid-credential':'Feil e-post eller passord.','auth/wrong-password':'Feil e-post eller passord.','auth/user-not-found':'Feil e-post eller passord.','auth/too-many-requests':'For mange forsøk. Vent litt og prøv att.','auth/operation-not-allowed':'E-post/passord er ikkje slått på i Firebase enno.','auth/network-request-failed':'Ingen nettverkskontakt.'}[c]||'Noko gjekk gale ('+c+').');
       const showLogin=()=>{
         if(ov)return;let reg=false;
@@ -709,7 +709,7 @@ if(!(window.claude&&window.claude.use)){(function(){
         ov=mk('div','position:fixed;inset:0;z-index:9999;background:var(--bg,#FFFDF6);display:grid;place-items:center;padding:16px');
         const box=mk('form','width:min(380px,100%);display:flex;flex-direction:column;gap:12px;background:var(--surface,#fff);border:2.5px solid var(--edge,#272733);border-radius:18px;padding:24px;box-shadow:4px 4px 0 var(--edge,#272733)');
         const h1=mk('h1','margin:0;font:400 34px var(--f-display,serif)','Troupers');
-        const sub=mk('p','margin:0;color:var(--muted,#666)','Logg inn for å bruke HSM241.');
+        const sub=mk('p','margin:0;color:var(--muted,#666)','Logg inn for å halde fram.');
         const inp=(ph,type,ac)=>{const i=mk('input','font:inherit;padding:10px 12px;border:2px solid var(--edge,#272733);border-radius:10px;background:var(--bg,#fff);color:inherit');i.placeholder=ph;i.type=type;i.autocomplete=ac;return i;};
         const nm=inp('Namn','text','name');nm.hidden=true;
         const em=inp('E-post','email','email'),pw=inp('Passord','password','current-password');
@@ -731,7 +731,7 @@ if(!(window.claude&&window.claude.use)){(function(){
       api.user={id:async()=>(await authReady).uid,me:async()=>{await authReady;return me2();},can:async()=>true,
         profiles:async ids=>{await authReady;const o={};
           await Promise.all(ids.map(async i=>{if(i===cur.uid){o[i]=me2();return;}
-            if(!pc[i]){try{const d=await fs.doc('hsm241/main/people/'+i).get();pc[i]=d.exists?d.data().name:'Ukjend';}catch(_){pc[i]='Ukjend';}}
+            if(!pc[i]){try{const d=await fs.doc('people/'+i).get();pc[i]=d.exists?d.data().name:'Ukjend';}catch(_){pc[i]='Ukjend';}}
             o[i]={id:i,name:pc[i],avatarUrl:av(pc[i]),isMe:false};}));return o;}};
       window.__logout=()=>auth.signOut().then(()=>location.reload());
     }
@@ -848,10 +848,10 @@ const E={active:false,id:null,unsub:null,rows:new Map(),blocks:new Map(),order:[
   pres:{},openedAt:0,loadedBlocks:false,seeding:false};
 const metaSubs={};let spaceSubs=[];
 
-const priv=()=>S.db.doc((W.claude&&W.claude.local)?'hsm241/main':'data/users/'+S.uid+'/profile');
+const priv=()=>S.db.doc('data/users/'+S.uid+'/profile');
 const base=id=>(id||S.active)===PRIV?priv():S.db.doc('projects/'+(id||S.active));
 const col=n=>base().collection(n);
-const LOCAL=!!(W.claude&&W.claude.local);
+const LOCAL=false;
 function meta(){return S.active===PRIV?LOCAL?{name:'HSM241',desc:'Notat, planar og framdrift for faget.',color:'#6C8FD8'}:{name:'Privat',desc:'Berre du ser det som ligg her.',color:'#6B7A73'}:(S.metas[S.active]||{name:'…',desc:''});}
 function role(){if(S.active===PRIV)return 'eigar';const m=S.data.members[S.uid];return m?m.role:null;}
 function perm(){const r=role();const w=!!S.canData&&r!=null;
@@ -1072,7 +1072,7 @@ async function leaveProject(){
 }
 async function removeProject(pid){
   const b=S.db.doc('projects/'+pid);
-  for(const n of ['events','tasks','members','books','chapters']){const s=await b.collection(n).get();for(const d of s.docs)await b.collection(n).doc(d.id).delete();}
+  for(const n of ['events','tasks','books','chapters']){const s=await b.collection(n).get();for(const d of s.docs)await b.collection(n).doc(d.id).delete();}
   const its=await b.collection('items').get();
   for(const d of its.docs){
     const bc=b.collection('items').doc(d.id).collection('blocks');const bs=await bc.get();
@@ -1081,6 +1081,8 @@ async function removeProject(pid){
     await b.collection('items').doc(d.id).delete();
   }
   await b.delete();
+  const ms=await b.collection('members').get();
+  for(const d of ms.docs)await b.collection('members').doc(d.id).delete();
 }
 async function deleteProject(){
   const pid=S.active,name=meta().name;
