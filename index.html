@@ -800,7 +800,8 @@ const metaSubs={};let spaceSubs=[];
 const priv=()=>S.db.doc('data/users/'+S.uid+'/profile');
 const base=id=>(id||S.active)===PRIV?priv():S.db.doc('projects/'+(id||S.active));
 const col=n=>base().collection(n);
-function meta(){return S.active===PRIV?{name:'Privat',desc:'Berre du ser det som ligg her.',color:'#6B7A73'}:(S.metas[S.active]||{name:'…',desc:''});}
+const LOCAL=!!(W.claude&&W.claude.local);
+function meta(){return S.active===PRIV?LOCAL?{name:'HSM241',desc:'Notat, planar og framdrift for faget.',color:'#6C8FD8'}:{name:'Privat',desc:'Berre du ser det som ligg her.',color:'#6B7A73'}:(S.metas[S.active]||{name:'…',desc:''});}
 function role(){if(S.active===PRIV)return 'eigar';const m=S.data.members[S.uid];return m?m.role:null;}
 function perm(){const r=role();const w=!!S.canData&&r!=null;
   return {role:r,write:w&&r!=='lesar',manage:w&&(r==='eigar'||r==='redaktor'),admin:w&&r==='eigar'};}
@@ -881,27 +882,27 @@ function renderSide(){
   const ps=S.myList.map(pid=>({pid,m:S.metas[pid]})).sort((a,b)=>String(a.m&&a.m.name||'~').localeCompare(String(b.m&&b.m.name||'~'),'nn'));
   side.replaceChildren(
     h('div',{class:'brand'},logo(),'Troupers'),
-    h('div',null,h('div',{class:'sec-h'},'Mi side'),h('div',{class:'sp-list'},spBtn(PRIV,'Privat','','lock'))),
-    h('div',null,h('div',{class:'sec-h'},'Prosjekt'),
+    LOCAL?h('div',{class:'sp-list'},spBtn(PRIV,'HSM241','','home')):h('div',null,h('div',{class:'sec-h'},'Mi side'),h('div',{class:'sp-list'},spBtn(PRIV,'Privat','','lock'))),
+    LOCAL?'':h('div',null,h('div',{class:'sec-h'},'Prosjekt'),
       h('div',{class:'sp-list'},ps.length?ps.map(({pid,m})=>spBtn(pid,m===undefined?'…':(m?m.name:'Sletta prosjekt'),m&&m.color)):
         (S.myLoaded?h('p',{class:'side-note'},'Du er ikkje med i nokon prosjekt enno.'):h('p',{class:'side-note'},'Lastar …')))),
-    h('div',{class:'side-actions'},
+    LOCAL?'':h('div',{class:'side-actions'},
       h('button',{class:'btn primary',type:'button',onclick:openNewProject},icon('plus'),'Nytt prosjekt'),
       h('button',{class:'btn',type:'button',onclick:openJoin},icon('users'),'Bli med i prosjekt')),
-    h('div',{class:'me'},h('img',{class:'av',src:S.me&&S.me.avatarUrl||'',alt:''}),h('span',null,(S.me&&S.me.name)||'Du'))
+    LOCAL?'':h('div',{class:'me'},h('img',{class:'av',src:S.me&&S.me.avatarUrl||'',alt:''}),h('span',null,(S.me&&S.me.name)||'Du'))
   );
 }
 function renderTop(){
   const t=$('#top');const m=meta();const p=perm();const isP=S.active!==PRIV;
   const sub=h('div',{class:'sub'});
-  if(!isP)sub.append(icon('lock'),m.desc);
+  if(!isP)sub.append(icon(LOCAL?'home':'lock'),m.desc);
   else{ if(p.role)sub.append(h('span',{class:'pill role-'+p.role},ROLES[p.role]||p.role)); if(m.desc)sub.append(h('span',null,m.desc)); }
   const mc=safeColor(m.color);const mn=$('.main');if(mn)mn.style.setProperty('--pc',mc);
   t.replaceChildren(
     h('button',{class:'icon-btn menu-btn',id:'btn-menu',type:'button','aria-label':'Opne meny',onclick:()=>toggleNav(true)},icon('menu',20)),
-    h('div',{class:'pj',style:'background:'+mc},isP?String(m.name||'?').trim().charAt(0).toUpperCase():icon('lock',22)),
+    h('div',{class:'pj',style:'background:'+mc},isP?String(m.name||'?').trim().charAt(0).toUpperCase():icon(LOCAL?'home':'lock',22)),
     h('div',{class:'ttl'},h('h1',null,m.name),sub),
-    (isP&&p.admin)?h('button',{class:'btn sm',id:'btn-edit',type:'button',onclick:openEditProject},icon('edit'),'Rediger'):null
+    (isP&&p.admin)?h('button',{class:'btn sm',id:'btn-edit',type:'button',onclick:openEditProject},icon('edit'),'Rediger'):''
   );
 }
 function renderTabs(){
