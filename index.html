@@ -882,7 +882,7 @@ function renderSide(){
   const ps=S.myList.map(pid=>({pid,m:S.metas[pid]})).sort((a,b)=>String(a.m&&a.m.name||'~').localeCompare(String(b.m&&b.m.name||'~'),'nn'));
   side.replaceChildren(
     h('div',{class:'brand'},logo(),'Troupers'),
-    LOCAL?h('div',{class:'sp-list'},spBtn(PRIV,'HSM241','','home')):h('div',null,h('div',{class:'sec-h'},'Mi side'),h('div',{class:'sp-list'},spBtn(PRIV,'Privat','','lock'))),
+    LOCAL?'':h('div',null,h('div',{class:'sec-h'},'Mi side'),h('div',{class:'sp-list'},spBtn(PRIV,'Privat','','lock'))),
     LOCAL?'':h('div',null,h('div',{class:'sec-h'},'Prosjekt'),
       h('div',{class:'sp-list'},ps.length?ps.map(({pid,m})=>spBtn(pid,m===undefined?'…':(m?m.name:'Sletta prosjekt'),m&&m.color)):
         (S.myLoaded?h('p',{class:'side-note'},'Du er ikkje med i nokon prosjekt enno.'):h('p',{class:'side-note'},'Lastar …')))),
