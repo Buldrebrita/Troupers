@@ -1169,7 +1169,7 @@ function renderSide(){
     h('div',null,h('div',{class:'sec-h'},'Prosjekt'),
       h('div',{class:'sp-list'},ps.length?ps.map(pb):
         (S.myLoaded?h('p',{class:'side-note'},'Du er ikkje med i nokon prosjekt enno.'):h('p',{class:'side-note'},'Lastar …'))),
-      more?h('button',{class:'btn ghost sm add-pj',type:'button',onclick:()=>{if(S.active!==PRIV)switchSpace(PRIV);toggleNav(false);}},'Alle prosjekt ('+all.length+')'):''),
+      more?h('button',{class:'btn ghost sm add-pj',type:'button',onclick:()=>{if(S.active!==PRIV)switchSpace(PRIV);S.tab='prosjekt';renderMain();toggleNav(false);}},'Alle prosjekt ('+all.length+')'):''),
     fin.length?h('div',null,h('div',{class:'sec-h'},'Ferdige prosjekt'),h('div',{class:'sp-list'},fin.map(pb))):'',
     refreshWidgets(false)
   );
@@ -1196,6 +1196,7 @@ function renderTabs(){
   const open=goalsArr().filter(x=>!x.done).length;
   const sd=skogStats().done;
   const defs=[['oversikt','Oversikt','home','violet'],['dokument','Dokument','doc','blue',Object.keys(S.data.items).length],['kalender','Kalender','calendar','rose'],['mal','Mål','target','orange',open],['skog','Skog','tree','green',sd]];
+  if(S.active===PRIV)defs.splice(1,0,['prosjekt','Prosjekt','tree','blue',S.myList.length]);
   if(S.active!==PRIV)defs.push(['prat','Meldingar','chat','teal',unreadCount(S.active,'prat')]);
   defs.push(['innst','Innstillingar','gear','amber']);
   t.replaceChildren(...defs.map(([k,l,ic,tn,n])=>h('button',{class:'tab tone-'+tn,id:'tab-'+k,type:'button',role:'tab','aria-selected':String(S.tab===k),onclick:()=>setTab(k)},icon(ic,16),l,n?h('span',{class:'n'},String(n)):null)));
@@ -1233,6 +1234,7 @@ function buildView(){
   else if(S.tab==='kalender')el=viewKalender();
   else if(S.tab==='skog')el=viewSkog();
   else if(S.tab==='mal')el=viewMal();
+  else if(S.tab==='prosjekt'&&S.active===PRIV)el=h('div',{class:'ov-wrap'},projSection());
   else if(S.tab==='prat'&&S.active!==PRIV)el=viewPrat();
   else if(S.tab==='innst')el=viewInnst();
   else el=viewOversikt();
@@ -1697,7 +1699,7 @@ function viewOversikt(){
       h('p',{class:'empty'},'Legg inn bøkene de les. For kvart kapittel de blir ferdige med, veks det eit tre.'),
       p.manage?h('button',{class:'btn primary',type:'button',onclick:()=>setTab('skog')},icon('plus'),'Kom i gang med skogen'):null);
   }
-  return h('div',{class:'ov-wrap'},S.active===PRIV?projSection():'',nytSection(),calCard,forest);
+  return h('div',{class:'ov-wrap'},nytSection(),calCard,forest);
 }
 
 /* ---------- mål (slått saman med oppgåver) ---------- */
