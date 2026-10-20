@@ -635,6 +635,60 @@ button.more{font-size:14px;color:var(--ink)}
 
 <div id="root"><div class="boot"><h1>Troupers</h1><p class="muted">Lastar …</p></div></div>
 <script>
+/* Lokal modus: når sida ligg utanfor Claude, lagrar vi alt i nettlesaren (localStorage). */
+if(!(window.claude&&window.claude.use)){(function(){
+  const KEY='troupers.db',NK='troupers.name',UK='troupers.uid';
+  let mem={};try{mem=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(_){mem={};}
+  const subs=new Set();
+  const rid=()=>Math.random().toString(36).slice(2,12);
+  let st=null;
+  const save=()=>{clearTimeout(st);st=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(mem));}catch(_){}},150);};
+  const clone=o=>o==null?o:JSON.parse(JSON.stringify(o));
+  const notify=()=>subs.forEach(f=>{try{f();}catch(e){console.error(e);}});
+  window.addEventListener('storage',e=>{if(e.key===KEY){try{mem=JSON.parse(e.newValue||'{}')||{};}catch(_){}notify();}});
+  const snapDoc=p=>({id:p.split('/').pop(),exists:p in mem,data:()=>clone(mem[p])});
+  function docRef(path){
+    return {id:path.split('/').pop(),path,
+      collection:n=>colRef(path+'/'+n),
+      get:async()=>snapDoc(path),
+      set:async d=>{mem[path]=clone(d);save();notify();},
+      update:async d=>{if(!(path in mem))throw new Error('Dokumentet finst ikkje');mem[path]=Object.assign({},mem[path],clone(d));save();notify();},
+      delete:async()=>{delete mem[path];save();notify();},
+      onSnapshot:(cb)=>{let last='';const f=()=>{const s=snapDoc(path);const j=JSON.stringify(mem[path]);if(j===last)return;last=j;cb(s);};subs.add(f);setTimeout(()=>{last='\u0000';f();},0);return()=>subs.delete(f);}
+    };
+  }
+  function listing(path,ord){
+    const pre=path+'/';let ids=Object.keys(mem).filter(k=>k.indexOf(pre)===0&&k.indexOf('/',pre.length)<0);
+    let docs=ids.map(k=>({id:k.slice(pre.length),exists:true,data:()=>clone(mem[k])}));
+    if(ord)docs.sort((a,b)=>{const x=mem[pre+a.id][ord],y=mem[pre+b.id][ord];return x<y?-1:x>y?1:0;});
+    return {docs,size:docs.length,empty:!docs.length,forEach:fn=>docs.forEach(fn)};
+  }
+  function colRef(path,ord){
+    return {path,
+      doc:id=>docRef(path+'/'+(id||rid())),
+      add:async d=>{const r=docRef(path+'/'+rid());await r.set(d);return r;},
+      get:async()=>listing(path,ord),
+      orderBy:f=>colRef(path,f),
+      onSnapshot:(cb)=>{let last='';const f=()=>{const s=listing(path,ord);const j=JSON.stringify(s.docs.map(d=>[d.id,mem[path+'/'+d.id]]));if(j===last)return;last=j;cb(s);};subs.add(f);setTimeout(()=>{last='\u0000';f();},0);return()=>subs.delete(f);}
+    };
+  }
+  let uid=null,name=null;
+  try{uid=localStorage.getItem(UK);name=localStorage.getItem(NK);}catch(_){}
+  if(!uid){uid='u'+rid()+rid();try{localStorage.setItem(UK,uid);}catch(_){}}
+  if(!name){try{name=(window.prompt('Kva skal vi kalle deg?','')||'').trim();}catch(_){}name=name||'Eg';try{localStorage.setItem(NK,name);}catch(_){}}
+  const av=n=>{const c=['#8EC5F0','#F5A9C4','#F7DC7A','#9ADBA6','#C9B6F0'][(n.charCodeAt(0)||0)%5];
+    return 'data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="'+c+'" stroke="#272733" stroke-width="2"/><text x="20" y="27" font-size="20" text-anchor="middle" font-family="sans-serif" fill="#272733">'+n.trim().charAt(0).toUpperCase().replace(/[<>&]/g,'')+'</text></svg>');};
+  const me={id:uid,name,avatarUrl:av(name),isMe:true};
+  const api={
+    db:{doc:p=>docRef(p),collection:p=>colRef(p)},
+    user:{id:async()=>uid,me:async()=>me,can:async()=>true,
+      profiles:async ids=>{const o={};ids.forEach(i=>{o[i]=i===uid?me:{id:i,name:'Ein annan',avatarUrl:av('?'),isMe:false};});return o;}},
+    room:null,assets:null
+  };
+  window.claude={use:async n=>api[n]||null,local:true};
+})();}
+
+
 (function(){
 'use strict';
 document.documentElement.lang='nn';
