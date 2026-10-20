@@ -675,7 +675,7 @@ if(!(window.claude&&window.claude.use)){(function(){
   let uid=null,name=null;
   try{uid=localStorage.getItem(UK);name=localStorage.getItem(NK);}catch(_){}
   if(!uid){uid='u'+rid()+rid();try{localStorage.setItem(UK,uid);}catch(_){}}
-  if(!name){try{name=(window.prompt('Kva skal vi kalle deg?','')||'').trim();}catch(_){}name=name||'Eg';try{localStorage.setItem(NK,name);}catch(_){}}
+  if(!name){name=name||'Eg';try{localStorage.setItem(NK,name);}catch(_){}}
   const av=n=>{const c=['#8EC5F0','#F5A9C4','#F7DC7A','#9ADBA6','#C9B6F0'][(n.charCodeAt(0)||0)%5];
     return 'data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="'+c+'" stroke="#272733" stroke-width="2"/><text x="20" y="27" font-size="20" text-anchor="middle" font-family="sans-serif" fill="#272733">'+n.trim().charAt(0).toUpperCase().replace(/[<>&]/g,'')+'</text></svg>');};
   const me={id:uid,name,avatarUrl:av(name),isMe:true};
