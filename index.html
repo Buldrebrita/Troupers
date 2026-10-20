@@ -787,6 +787,21 @@ input[type=checkbox]:focus-visible{outline:3px solid var(--accent);outline-offse
 .pj-card{display:flex;align-items:center;gap:8px;text-align:left;border:2px solid var(--edge);border-radius:var(--wob-s);background:color-mix(in srgb,var(--pc) 22%,var(--surface));padding:10px 12px;font:400 18px var(--f-display);color:var(--ink);box-shadow:2px 2px 0 var(--edge)}
 .pj-card .dot{width:12px;height:12px;border-radius:50%;flex:none}.pj-card .nm{flex:1}.pj-card .muted{font:400 14px var(--f-body)}
 .pj-card:hover{background:color-mix(in srgb,var(--pc) 38%,var(--surface))}
+.tm{cursor:text;text-align:center;font-size:34px}.tm:hover{background:color-mix(in srgb,var(--y) 40%,transparent);border-radius:8px}
+.tm-inp{width:100%;box-sizing:border-box;font:inherit;text-align:center;border:2px dashed var(--edge);border-radius:8px;background:var(--surface);color:var(--ink);padding:0}
+.tm-b{gap:6px;justify-content:center}
+.wtabs{display:flex;flex-wrap:wrap;gap:2px;justify-content:center}
+.wtabs button{border:0;background:none;font:400 13px var(--f-body);color:var(--muted);padding:2px 6px;border-radius:8px}
+.wtabs button[aria-selected=true]{background:var(--y);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--edge)}
+.ring{animation:ringp .5s ease-in-out 7}
+@keyframes ringp{50%{transform:scale(1.04) rotate(-1.5deg);filter:brightness(1.1)}}
+.fx-over{position:fixed;inset:0;z-index:9999;pointer-events:none;overflow:hidden;background:radial-gradient(circle,rgba(255,240,138,.35),transparent 70%);animation:fxin 3.6s ease-out forwards}
+.fx-over i{position:absolute;top:-20px;width:10px;height:16px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{top:105%;transform:translateX(40px) rotate(720deg)}}
+@keyframes fxin{80%{opacity:1}100%{opacity:0}}
+.fx-msg{position:absolute;top:38%;left:0;right:0;text-align:center;font:400 clamp(34px,7vw,80px) var(--f-display);color:var(--ink);text-shadow:3px 3px 0 var(--y);animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{from{transform:scale(.3);opacity:0}}
+@media (prefers-reduced-motion:reduce){.ring,.fx-over i,.fx-msg{animation:none}}
 </style>
 
 <div id="root"><div class="boot"><h1>Troupers</h1><p class="muted">Lastar …</p></div></div>
@@ -2734,7 +2749,7 @@ function openProjectChoice(){
 }
 /* ---------- kontrollsenter (widgets) ---------- */
 const WCAP=6;
-const WST={stop:{run:false,start:0,acc:0},cd:{run:false,end:0,left:300,min:5},po:{mode:'fokus',run:false,end:0,left:1500},cal:null};
+const WST={stop:{run:false,start:0,acc:0},cd:{run:false,end:0,left:300,total:300},po:{mode:'fokus',run:false,end:0,left:1500,total:1500},cal:null};
 const WIDS={
   klokke:{l:'Klokke og dato',ic:'calendar',sz:1},
   minikal:{l:'Liten kalender',ic:'calendar',sz:2},
@@ -2777,22 +2792,50 @@ function wStop(){
   const rs=h('button',{class:'btn ghost sm',type:'button',onclick:()=>{s.run=false;s.acc=0;refreshWidgets(true);}},'Nullstill');
   return [t,h('div',{class:'row',style:'gap:6px'},go,rs)];
 }
-function wCountdown(){
-  const c=WST.cd;const t=h('div',{class:'w-big mono'});
-  const left=()=>c.run?c.end-Date.now():c.left*1000;
-  const up=()=>{if(c.run&&Date.now()>=c.end){c.run=false;c.left=c.min*60;beep();toast('Tida er ute!');refreshWidgets(true);return;}t.textContent=fmtT(left());};up();WID.tick.push(up);
-  const mi=h('input',{type:'number',min:'1',max:'600',value:String(c.min),'aria-label':'Minutt',style:'width:64px',disabled:c.run,onchange:e=>{c.min=Math.max(1,Math.min(600,parseInt(e.target.value,10)||5));c.left=c.min*60;refreshWidgets(true);}});
-  const go=h('button',{class:'btn sm',type:'button',onclick:()=>{if(c.run){c.left=Math.ceil((c.end-Date.now())/1000);c.run=false;}else{c.end=Date.now()+c.left*1000;c.run=true;}refreshWidgets(true);}},c.run?'Pause':'Start');
-  const rs=h('button',{class:'btn ghost sm',type:'button',onclick:()=>{c.run=false;c.left=c.min*60;refreshWidgets(true);}},'Nullstill');
-  return [t,h('div',{class:'row',style:'gap:6px;align-items:center'},mi,h('span',{class:'muted'},'min'),go,rs)];
+function parseDur(v,def){v=String(v).trim().replace(',','.');let t;
+  if(v.indexOf(':')>=0){const p=v.split(':').map(x=>parseInt(x,10)||0);t=p.length===3?p[0]*3600+p[1]*60+p[2]:p[0]*60+p[1];}
+  else{const n=parseFloat(v);t=isNaN(n)?def:Math.round(n*60);}
+  return Math.max(1,Math.min(99*3600,t||def));}
+function doneFx(msg){
+  beep();setTimeout(beep,450);setTimeout(beep,900);
+  const o=h('div',{class:'fx-over'});const cols=['#F4C95D','#F2A0B8','#8FB8E8','#9AD0A8','#B79CF2','#F5A26B'];
+  for(let i=0;i<46;i++)o.append(h('i',{style:'left:'+Math.random()*100+'%;background:'+cols[i%cols.length]+';animation-delay:'+(Math.random()*.8)+'s;animation-duration:'+(1.6+Math.random()*1.4)+'s;transform:rotate('+Math.random()*360+'deg)'}));
+  o.append(h('div',{class:'fx-msg'},msg));document.body.append(o);setTimeout(()=>o.remove(),3600);
+  const el=document.getElementById('ctl');if(el){el.classList.add('ring');setTimeout(()=>el.classList.remove('ring'),3600);}
+  const t0=document.title;let n=0;const iv=setInterval(()=>{document.title=(n++%2?t0:'⏰ '+msg);if(n>8){clearInterval(iv);document.title=t0;}},600);
 }
+/* felles nedteljar: st={run,end,left,total}; klikk på tala for å endre */
+function timerBody(st,opt){
+  const disp=h('div',{class:'w-big mono tm',role:'button',tabindex:'0',title:'Trykk for å endre tida'});
+  const left=()=>st.run?Math.max(0,st.end-Date.now()):st.left*1000;
+  const up=()=>{if(st.run&&Date.now()>=st.end){st.run=false;st.left=st.total;doneFx(opt.msg());if(opt.done)opt.done();refreshWidgets(true);return;}
+    if(!disp.querySelector('input'))disp.textContent=fmtT(left());};
+  up();WID.tick.push(up);
+  const edit=()=>{if(disp.querySelector('input'))return;
+    if(st.run){st.left=Math.ceil((st.end-Date.now())/1000);st.run=false;}
+    const inp=h('input',{class:'tm-inp',type:'text',inputmode:'numeric','aria-label':'Tid (minutt eller mm:ss)',value:fmtT(st.left*1000)});
+    let fin=false;const ok=()=>{if(fin)return;fin=true;st.total=st.left=parseDur(inp.value,st.total);opt.set&&opt.set(st.total);refreshWidgets(true);};
+    inp.onblur=ok;inp.onkeydown=e=>{if(e.key==='Enter')ok();if(e.key==='Escape'){fin=true;refreshWidgets(true);}};
+    disp.replaceChildren(inp);inp.focus();inp.select();};
+  disp.onclick=edit;disp.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();edit();}};
+  const go=h('button',{class:'btn sm primary',type:'button',onclick:()=>{if(st.left<=0)st.left=st.total;st.end=Date.now()+st.left*1000;st.run=true;refreshWidgets(true);}},'Start');
+  const pa=h('button',{class:'btn sm',type:'button',onclick:()=>{st.left=Math.max(1,Math.ceil((st.end-Date.now())/1000));st.run=false;refreshWidgets(true);}},'Pause');
+  const sp=h('button',{class:'btn ghost sm',type:'button',onclick:()=>{st.run=false;st.left=st.total;refreshWidgets(true);}},'Stopp');
+  return [disp,h('div',{class:'row tm-b'},st.run?pa:go,sp)];
+}
+function wCountdown(){
+  const c=WST.cd;if(!c.total)c.total=c.left=300;
+  return timerBody(c,{msg:()=>'Tida er ute!'});
+}
+const POM={fokus:['Pomodoro',1500],kort:['Kort pause',300],lang:['Lang pause',900]};const POMS={fokus:'Pomodoro',kort:'Kort',lang:'Lang'};
 function wPomo(){
-  const p=WST.po;const t=h('div',{class:'w-big mono'});const dur=()=>p.mode==='fokus'?1500:300;
-  const left=()=>p.run?p.end-Date.now():p.left*1000;
-  const up=()=>{if(p.run&&Date.now()>=p.end){beep();toast(p.mode==='fokus'?'Fokusøkta er ferdig. Ta ein pause!':'Pausen er over.');p.mode=p.mode==='fokus'?'pause':'fokus';p.left=dur();p.run=false;refreshWidgets(true);return;}t.textContent=fmtT(left());};up();WID.tick.push(up);
-  const go=h('button',{class:'btn sm',type:'button',onclick:()=>{if(p.run){p.left=Math.ceil((p.end-Date.now())/1000);p.run=false;}else{p.end=Date.now()+p.left*1000;p.run=true;}refreshWidgets(true);}},p.run?'Pause':'Start');
-  const sw=h('button',{class:'btn ghost sm',type:'button',onclick:()=>{p.mode=p.mode==='fokus'?'pause':'fokus';p.left=dur();p.run=false;refreshWidgets(true);}},p.mode==='fokus'?'Til pause':'Til fokus');
-  return [h('div',{class:'w-sub'},p.mode==='fokus'?'Fokus 25 min':'Pause 5 min'),t,h('div',{class:'row',style:'gap:6px'},go,sw)];
+  const p=WST.po;if(!p.dur)p.dur={fokus:1500,kort:300,lang:900};
+  if(!POM[p.mode])p.mode='fokus';
+  if(!p.total){p.total=p.dur[p.mode];p.left=p.total;}
+  const tabs=h('div',{class:'wtabs',role:'tablist'},Object.keys(POM).map(k=>h('button',{type:'button',role:'tab',title:POM[k][0],'aria-selected':String(p.mode===k),onclick:()=>{p.mode=k;p.run=false;p.total=p.left=p.dur[k];refreshWidgets(true);}},POMS[k])));
+  const body=timerBody(p,{msg:()=>p.mode==='fokus'?'Fokusøkta er ferdig!':'Pausen er over!',set:t=>{p.dur[p.mode]=t;},
+    done:()=>{const nx=p.mode==='fokus'?'kort':'fokus';p.mode=nx;p.total=p.left=p.dur[nx];}});
+  return [tabs,...body];
 }
 function wNotes(){
   let v='';try{v=localStorage.getItem('troupers.notes')||'';}catch(_){}
@@ -2808,7 +2851,7 @@ const WB={klokke:wClock,minikal:wMiniCal,stoppeklokke:wStop,nedtelling:wCountdow
 function refreshWidgets(force){
   if(!WID.el)WID.el=h('section',{class:'ctl',id:'ctl'});
   const ae=document.activeElement;
-  if(!force&&ae&&WID.el.contains(ae)&&ae.tagName==='TEXTAREA')return WID.el;
+  if(!force&&ae&&WID.el.contains(ae)&&(ae.tagName==='TEXTAREA'||ae.tagName==='INPUT'))return WID.el;
   const sel=widSel();WID.tick=[];
   const used=widUsed(sel);
   const head=h('div',{class:'ctl-h'},h('span',{style:'flex:1'}),
@@ -2851,7 +2894,7 @@ const EN={'Mi side':'My page','Oversikt':'Overview','Dokument':'Documents','Kale
 'Del koden med dei du vil ha med. Dei skriv han inn under «Bli med i prosjekt» og blir medlemmer.':'Share the code with the people you want to join. They enter it under “Join a project” and become members.','Avslutta prosjekt blir ferdigstilt og lagra, men er ikkje aktivt lenger.':'An ended project is finished and saved, but no longer active.','Å slette prosjektet fjernar alt for godt. Ingenting blir lagra.':'Deleting the project removes everything for good. Nothing is saved.','Du er einaste eigar. Gjer ein annan til eigar før du forlèt prosjektet.':'You are the only owner. Make someone else an owner before you leave.',
 'Ctrl+Enter sender. «Viktig varsel» kjem øvst på oversikta til alle.':'Ctrl+Enter sends. “Important alert” appears at the top of everyone’s overview.','Skriv ei melding … bruk «Tagg» for å nemne nokon':'Write a message … tag people to mention them','Kvart mål blir ein skog':'Each goal becomes a forest',
 'Medlemmer':'Members','Berre lesetilgang':'Read-only','Plant kapittel':'Plant chapter','Her er ingenting enno.':'Nothing here yet.','Lag brukar ':'Create account ','Du er ikkje med på denne.':'You are not attending this.',
-'Nytt prosjekt':'New project','Opprett nytt prosjekt':'Create a new project','Bli med i eit eksisterande prosjekt':'Join an existing project','Kontrollsenter':'Control centre','Vel verktøy':'Choose tools','Klokke og dato':'Clock and date','Liten kalender':'Small calendar','Stoppeklokke':'Stopwatch','Tidsnedteljar':'Countdown','Raske notat':'Quick notes','Måla mine':'My goals','Start':'Start','Stopp':'Stop','Pause':'Pause','Nullstill':'Reset','Profil':'Profile','Brukarnamn':'Username','Lagre namn':'Save name','Slett brukaren':'Delete the user','Overskrift (valfritt)':'Heading (optional)','Skriv ei melding …':'Write a message …','Avstemning':'Poll','Bilete':'Image','Koble til':'Link to','Rediger prosjektet':'Edit the project','Lagre endringar':'Save changes','Notat om prosjektet':'Notes about the project','Gløymt passord?':'Forgot password?','Vis':'Show','Skjul':'Hide','Kalendermånad':'Calendar month','4 veker':'4 weeks','Fullt. Fjern eitt verktøy for å bytte det ut.':'Full. Remove a tool to swap it.',
+'Nytt prosjekt':'New project','Opprett nytt prosjekt':'Create a new project','Bli med i eit eksisterande prosjekt':'Join an existing project','Kontrollsenter':'Control centre','Vel verktøy':'Choose tools','Klokke og dato':'Clock and date','Liten kalender':'Small calendar','Stoppeklokke':'Stopwatch','Tidsnedteljar':'Countdown','Raske notat':'Quick notes','Måla mine':'My goals','Start':'Start','Stopp':'Stop','Pause':'Pause','Nullstill':'Reset','Stopp':'Stop','Pomodoro':'Pomodoro','Kort pause':'Short break','Lang pause':'Long break','Tida er ute!':'Time is up!','Fokusøkta er ferdig!':'Focus session done!','Pausen er over!':'Break is over!','Profil':'Profile','Brukarnamn':'Username','Lagre namn':'Save name','Slett brukaren':'Delete the user','Overskrift (valfritt)':'Heading (optional)','Skriv ei melding …':'Write a message …','Avstemning':'Poll','Bilete':'Image','Koble til':'Link to','Rediger prosjektet':'Edit the project','Lagre endringar':'Save changes','Notat om prosjektet':'Notes about the project','Gløymt passord?':'Forgot password?','Vis':'Show','Skjul':'Hide','Kalendermånad':'Calendar month','4 veker':'4 weeks','Fullt. Fjern eitt verktøy for å bytte det ut.':'Full. Remove a tool to swap it.',
 'januar':'January','februar':'February','mars':'March','april':'April','mai':'May','juni':'June','juli':'July','august':'August','september':'September','oktober':'October','november':'November','desember':'December',
 'jan.':'Jan','feb.':'Feb','mar.':'Mar','apr.':'Apr','jun.':'Jun','jul.':'Jul','aug.':'Aug','sep.':'Sep','okt.':'Oct','nov.':'Nov','des.':'Dec',
 'må':'Mo','ty':'Tu','on':'We','to':'Th','fr':'Fr','la':'Sa','su':'Su','Vk':'Wk','mandag':'Monday','tysdag':'Tuesday','onsdag':'Wednesday','torsdag':'Thursday','fredag':'Friday','laurdag':'Saturday','søndag':'Sunday'};
