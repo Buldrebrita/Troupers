@@ -774,6 +774,15 @@ input[type=checkbox]:focus-visible{outline:3px solid var(--accent);outline-offse
 .mc-d.out{opacity:.4}.mc-d.today{background:var(--y);box-shadow:inset 0 0 0 1.5px var(--edge)}
 .mc-d.has::after{content:"";position:absolute;left:50%;bottom:0;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--rose)}
 .mc-d:hover{background:color-mix(in srgb,var(--y) 50%,transparent)}
+.ctl{gap:6px;padding-top:8px}.ctl-h{justify-content:flex-end;min-height:0}.ctl-h .icon-btn{width:24px;height:24px;opacity:.6}.ctl-h .icon-btn:hover{opacity:1}
+.wd{position:relative;padding:6px 10px;gap:2px}
+.wd-h{position:absolute;top:2px;right:3px;opacity:0;transition:opacity .15s}.wd:hover .wd-h,.wd:focus-within .wd-h{opacity:1}
+.wd.plain{background:none!important;border:0;padding:0}
+.wd.plain .wd-h{top:-2px;right:-2px}
+.w-big{font-size:26px}.w-sub{font-size:13px}
+.postit{min-height:70px;height:80px}
+.mc-d{font-size:12px;padding:1px 0}.mc-n b{font-size:15px}
+.wd.choose{padding:6px}
 </style>
 
 <div id="root"><div class="boot"><h1>Troupers</h1><p class="muted">Lastar …</p></div></div>
@@ -2701,7 +2710,7 @@ function openProjectChoice(){
     h('button',{class:'choice',type:'button',onclick:()=>{closeModal();openJoin();}},h('b',null,'Bli med i eit eksisterande prosjekt'),h('span',null,'Skriv inn koden du har fått frå ein som er med.'))));
 }
 /* ---------- kontrollsenter (widgets) ---------- */
-const WCAP=4;
+const WCAP=6;
 const WST={stop:{run:false,start:0,acc:0},cd:{run:false,end:0,left:300,min:5},po:{mode:'fokus',run:false,end:0,left:1500},cal:null};
 const WIDS={
   klokke:{l:'Klokke og dato',ic:'calendar',sz:1},
@@ -2779,12 +2788,12 @@ function refreshWidgets(force){
   if(!force&&ae&&WID.el.contains(ae)&&ae.tagName==='TEXTAREA')return WID.el;
   const sel=widSel();WID.tick=[];
   const used=widUsed(sel);
-  const head=h('div',{class:'ctl-h'},h('b',null,'Kontrollsenter'),h('span',{class:'s muted'},used+'/'+WCAP),
+  const head=h('div',{class:'ctl-h'},h('span',{style:'flex:1'}),
     h('button',{class:'icon-btn',type:'button','aria-label':WID.edit?'Ferdig med å velje':'Vel verktøy',title:'Vel verktøy',onclick:()=>{WID.edit=!WID.edit;refreshWidgets(true);}},icon(WID.edit?'check':'gear',16)));
   const cards=sel.map(k=>{const w=WIDS[k];
     let body;try{body=WB[k]();}catch(e){body=[h('div',{class:'w-sub'},'Feil')];}
-    return h('div',{class:'wd'},h('div',{class:'wd-h'},h('span',null,w.l),h('button',{class:'icon-btn',type:'button','aria-label':'Fjern '+w.l,onclick:()=>{widSave(widSel().filter(x=>x!==k));refreshWidgets(true);}},icon('x',14))),body);});
-  const chooser=WID.edit?h('div',{class:'wd choose'},h('div',{class:'w-sub'},used>=WCAP?'Fullt. Fjern eitt verktøy for å bytte det ut.':'Vel verktøy. Det er plass til '+(WCAP-used)+' til.'),
+    return h('div',{class:'wd'+(k==='notat'?' plain':'')},h('div',{class:'wd-h'},h('button',{class:'icon-btn',type:'button','aria-label':'Fjern '+w.l,onclick:()=>{widSave(widSel().filter(x=>x!==k));refreshWidgets(true);}},icon('x',14))),body);});
+  const chooser=WID.edit?h('div',{class:'wd choose'},h('div',{class:'w-sub'},used>=WCAP?'Fullt. Fjern eitt verktøy for å bytte det ut.':'Vel verktøy'),
     Object.keys(WIDS).filter(k=>sel.indexOf(k)<0).map(k=>{const fits=used+WIDS[k].sz<=WCAP;
       return h('button',{class:'btn sm',type:'button',disabled:!fits,title:fits?'':'Ikkje plass',onclick:()=>{widSave(widSel().concat([k]));refreshWidgets(true);}},icon('plus',14),WIDS[k].l);})):null;
   WID.el.replaceChildren(head,...cards,chooser||'');
