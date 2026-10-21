@@ -846,6 +846,21 @@ input[type=checkbox]:focus-visible{outline:3px solid var(--accent);outline-offse
 .kb-c.over{background:color-mix(in srgb,var(--y) 40%,var(--surface))}
 .kb-c h4{display:flex;align-items:center;gap:8px;font:400 20px var(--f-display);margin:2px 4px 8px}.kb-c h4 .n{margin-left:auto;font:400 14px var(--f-body);color:var(--muted)}
 .kb-l{display:flex;flex-direction:column;gap:8px}.kb-e{color:var(--muted);text-align:center;margin:10px 0}
+.crit{position:fixed;right:18px;bottom:14px;z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:2px;pointer-events:none}
+.crit>*{pointer-events:auto}
+@keyframes crwalk{0%{transform:translateX(0)}100%{transform:translateX(-110px)}}
+.cr-body{border:0;background:none;padding:0;cursor:pointer;animation:crwalk 16s ease-in-out infinite alternate;filter:drop-shadow(0 3px 0 rgba(0,0,0,.12))}
+.cr-body svg{animation:crbob 1.1s ease-in-out infinite alternate;transform-origin:50% 100%}
+@keyframes crbob{0%{transform:translateY(0) rotate(-2deg)}100%{transform:translateY(-5px) rotate(2deg)}}
+.cr-bub{position:relative;max-width:260px;background:var(--surface);color:var(--ink);border:2px solid var(--edge);border-radius:16px;padding:8px 12px 10px;box-shadow:3px 3px 0 var(--edge);font-size:16px;line-height:1.3;margin-right:10px}
+.cr-bub::after{content:"";position:absolute;right:34px;bottom:-9px;width:14px;height:14px;background:var(--surface);border-right:2px solid var(--edge);border-bottom:2px solid var(--edge);transform:rotate(45deg)}
+.cr-h{display:flex;align-items:center;gap:4px;margin-bottom:2px;font-size:14px}.cr-h .icon-btn{margin-left:auto;width:22px;height:22px}
+.cr-b{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.cr-s{stroke:var(--edge);stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round;overflow:visible}
+.cr-n{font:400 12px var(--f-body);fill:var(--ink);stroke:none}
+.fcrit{cursor:pointer}.fcrit:hover .cr-s,.fcrit:focus .cr-s{filter:brightness(1.08)}
+.fun-ic{display:inline-flex;vertical-align:middle;margin-right:4px}.fun-ic svg{display:block}
+@media (prefers-reduced-motion:reduce){.cr-body,.cr-body svg{animation:none}}
 </style>
 
 <div id="root"><div class="boot"><h1>Troupers</h1><p class="muted">Lastar …</p></div></div>
@@ -1636,11 +1651,12 @@ const invitedOf=e=>Array.isArray(e.invited)?e.invited:null;
 const isInvited=(e,u)=>{const l=invitedOf(e);return l?l.indexOf(u)>=0:true;};
 const isDeclined=(e,u)=>Array.isArray(e.declined)&&e.declined.indexOf(u)>=0;
 const eventsArr=()=>{
-  const out=Object.entries(S.data.events).map(([id,t])=>Object.assign({id},t));
+  const out=Object.entries(S.data.events).map(([id,t])=>Object.assign({id},t)).filter(e=>!(e.expires&&e.expires<Date.now()));
   if(S.active!==PRIV)return out;
   for(const pid in S.px.events){const m=S.metas[pid];
     for(const id in S.px.events[pid]){const e=S.px.events[pid][id];
       if(!isInvited(e,S.uid)||isDeclined(e,S.uid))continue;
+      if(e.expires&&e.expires<Date.now())continue;
       out.push(Object.assign({id,_pid:pid,_pn:m&&m.name||'',_pc:m&&m.color},e));}}
   return out;
 };
@@ -1662,7 +1678,7 @@ function evTimeText(x){return x.time?(x.time+(x.endTime?'–'+x.endTime:'')):'He
 function agCard(x){
   if(x.k==='ev'){const dec=isDeclined(x,S.uid);
     return h('button',{type:'button',class:'ag-c ev'+(dec?' declined':''),style:'--ec:'+evColor(x.color),onclick:()=>openEventModal(x)},
-      h('span',{class:'tm'},evTimeText(x)),h('span',{class:'tt'},x.title),
+      h('span',{class:'tm'},evTimeText(x)),h('span',{class:'tt'},x.fun&&CR[x.fun]?critIc(x.fun,30):null,x.title),
       x._pn?h('span',{class:'pn'},x._pn):null,dec?h('span',{class:'pn'},'Avslått'):null);}
   return h('button',{type:'button',class:'ag-c task'+(x.done?' done':'')+(x.assignee?' pc':''),style:x.assignee?'--ec:'+personColor(x.assignee):null,onclick:()=>openGoalModal(x)},
     h('span',{class:'tm'},x._kind==='sub'?'Delmål':'Mål'),h('span',{class:'tt'},x.title),
@@ -2205,7 +2221,7 @@ function newEventDefaults(){
 }
 function chipEl(x){
   if(x.k==='ev')return h('button',{type:'button',class:'chip ev'+(isDeclined(x,S.uid)?' declined':''),style:'--ec:'+evColor(x.color),title:x.title+(x._pn?' · '+x._pn:''),
-    onclick:e=>{e.stopPropagation();openEventModal(x);}},h('i',{class:'cd'}),h('span',{class:'ct'},(x.time?x.time+' ':'')+x.title));
+    onclick:e=>{e.stopPropagation();openEventModal(x);}},h('i',{class:'cd'}),h('span',{class:'ct'},x.fun&&CR[x.fun]?critIc(x.fun,16):null,(x.time?x.time+' ':'')+x.title));
   return h('button',{type:'button',class:'chip task'+(x.done?' done':'')+(x.assignee?' pc':''),style:x.assignee?'--ec:'+personColor(x.assignee):null,title:x.title+(x.assignee?' · '+nameOf(x.assignee):''),
     onclick:e=>{e.stopPropagation();openGoalModal(x);}},h('i',{class:'cd'}),h('span',{class:'ct'},x.title));
 }
@@ -2456,6 +2472,7 @@ function forestSvg(st){
     for(let i=0;i<n;i++){const x=20+R()*960,y=236+R()*180,c=fc[Math.floor(R()*fc.length)];
       fl+='<g transform="translate('+x.toFixed(0)+' '+y.toFixed(0)+')"><path d="M0 0v7" class="o2"/><circle cx="0" cy="-2" r="4" fill="'+c+'" class="o" style="stroke-width:1.4"/><circle cx="0" cy="-2" r="1.4" fill="#F0A020"/></g>';}
     parts.push(fl);}
+  parts.push(critForest());
   // tre og tomme plantestader, bak til framme
   const sorted=lay.slots.slice().sort((a,b)=>a.y-b.y);let newIdx=0;const doneKeys=chEff();
   sorted.forEach(sl=>{
@@ -2908,6 +2925,8 @@ function openProfile(){
       e.currentTarget.parentNode.querySelectorAll('.pcol').forEach(x=>x.classList.remove('on'));e.currentTarget.classList.add('on');renderAll();}})))),
     h('div',{class:'lbl'},'Utsjånad',h('div',{class:'seg',role:'group','aria-label':'Utsjånad'},[['lys','Lyst'],['mork','Mørkt'],['auto','Automatisk']].map(([k,l])=>
       h('button',{type:'button','aria-pressed':String(themeGet()===k),onclick:e=>{themeSet(k);e.currentTarget.parentNode.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false'));e.currentTarget.setAttribute('aria-pressed','true');renderTop();}},l)))),
+    h('div',{class:'lbl'},'Dyr på sida',h('div',{class:'seg',role:'group','aria-label':'Dyr på sida'},[['1','På'],['0','Av']].map(([k,l])=>
+      h('button',{type:'button','aria-pressed':String((critOn()?'1':'0')===k),onclick:e=>{try{localStorage.setItem('troupers.crit',k);}catch(_){}if(k==='0')critClose();e.currentTarget.parentNode.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false'));e.currentTarget.setAttribute('aria-pressed','true');}},l)))),
     h('div',{class:'row end'},h('button',{class:'btn',type:'button',onclick:closeModal},'Avbryt'),h('button',{class:'btn primary',type:'submit'},'Lagre namn')),
     h('hr',{style:'border:0;border-top:1.5px dashed var(--line);width:100%'}),
     h('div',{class:'row',style:'gap:10px;flex-wrap:wrap'},
@@ -3067,9 +3086,134 @@ function refreshWidgets(force){
 }
 setInterval(()=>{WID.tick.forEach(f=>{try{f();}catch(_){}});},500);
 
+/* ---------- dyra i skogen ---------- */
+const CD={
+ ape:'<circle cx="13" cy="30" r="7" fill="#B07C52"/><circle cx="51" cy="30" r="7" fill="#B07C52"/><circle cx="13" cy="30" r="3" fill="#F0C9A0" stroke="none"/><circle cx="51" cy="30" r="3" fill="#F0C9A0" stroke="none"/><ellipse cx="32" cy="56" rx="15" ry="8" fill="#B07C52"/><circle cx="32" cy="30" r="17" fill="#B07C52"/><ellipse cx="32" cy="35" rx="12" ry="10" fill="#F0C9A0"/><circle cx="26.5" cy="29" r="2" fill="#272733" stroke="none"/><circle cx="37.5" cy="29" r="2" fill="#272733" stroke="none"/><path d="M22 23l7 2.5M42 21l-7 3.5" fill="none"/><path d="M26 38q6 5 12 0" fill="none"/>',
+ gress:'<path d="M20 44L9 27L3 49" fill="none" stroke-width="3"/><path d="M34 47l4 11-5 2M43 46l5 10" fill="none"/><ellipse cx="28" cy="40" rx="21" ry="8" fill="#9ED36F" transform="rotate(-8 28 40)"/><ellipse cx="25" cy="35" rx="14" ry="5" fill="#CBEFA3" transform="rotate(-8 25 35)"/><path d="M50 25Q52 10 63 8M54 26Q61 15 63 21" fill="none"/><circle cx="49" cy="33" r="9" fill="#9ED36F"/><rect x="46" y="28" width="13" height="6" rx="2.5" fill="#272733"/><path d="M53 39q3 2.4 6 -1" fill="none"/>',
+ royskatt:'<path d="M12 46Q-2 42 4 30Q10 35 14 41Z" fill="#C99A68"/><circle cx="4" cy="31" r="3" fill="#272733" stroke="none"/><ellipse cx="30" cy="45" rx="21" ry="9" fill="#C99A68"/><ellipse cx="33" cy="50" rx="15" ry="4" fill="#FFF4E0" stroke="none"/><path d="M18 52v6M30 53v6M42 52v6" fill="none" stroke-width="3.2"/><circle cx="50" cy="34" r="10" fill="#C99A68"/><circle cx="45" cy="25" r="3.6" fill="#C99A68"/><circle cx="55" cy="25" r="3.6" fill="#C99A68"/><ellipse cx="55" cy="38" rx="5.5" ry="4" fill="#FFF4E0"/><circle cx="59" cy="36.5" r="1.6" fill="#272733" stroke="none"/><circle cx="51" cy="31" r="1.8" fill="#272733" stroke="none"/><path d="M52 41q3 2 6 0" fill="none"/><path d="M40 42q9 5 19 -1" fill="none" stroke="#F27A8D" stroke-width="4.5"/>',
+ hare:'<ellipse cx="24" cy="14" rx="5" ry="13" fill="#E8E0D4"/><ellipse cx="40" cy="14" rx="5" ry="13" fill="#E8E0D4"/><ellipse cx="24" cy="15" rx="2" ry="8" fill="#F2B6C4" stroke="none"/><ellipse cx="32" cy="56" rx="14" ry="8" fill="#E8E0D4"/><circle cx="32" cy="38" r="13" fill="#E8E0D4"/><circle cx="27" cy="36" r="1.8" fill="#272733" stroke="none"/><circle cx="37" cy="36" r="1.8" fill="#272733" stroke="none"/><path d="M30 42h4l-2 2.5z" fill="#F2879F"/><path d="M28 46q4 2 8 0" fill="none"/>',
+ pinnsvin:'<path d="M8 52Q6 18 34 18Q60 20 58 52Z" fill="#8A6B52"/><path d="M10 40l4-11 3 8 4-12 3 10 5-12 2 10 5-10 1 10 5-8 1 10" fill="none" stroke-width="2.2"/><ellipse cx="49" cy="46" rx="11" ry="8" fill="#F0D2B0"/><circle cx="59" cy="46" r="2.4" fill="#272733" stroke="none"/><circle cx="50" cy="42" r="1.8" fill="#272733" stroke="none"/><path d="M20 54v5M34 54v5" fill="none" stroke-width="3.2"/>',
+ ugle:'<path d="M18 16l5 8M46 16l-5 8" fill="none" stroke-width="3"/><ellipse cx="32" cy="38" rx="17" ry="20" fill="#A9906E"/><ellipse cx="32" cy="45" rx="10" ry="12" fill="#EADFC8"/><circle cx="25" cy="29" r="7.5" fill="#fff"/><circle cx="39" cy="29" r="7.5" fill="#fff"/><circle cx="25" cy="30" r="3" fill="#272733" stroke="none"/><circle cx="39" cy="30" r="3" fill="#272733" stroke="none"/><path d="M32 33l-3.5 5h7z" fill="#F2B84B"/><path d="M26 58v3M38 58v3" fill="none" stroke-width="3"/>'
+};
+const CR={
+ ape:{name:'Bonzo',art:'apekatten',col:'#B07C52'},
+ gress:{name:'Greta',art:'gresshoppa',col:'#7FB75A'},
+ royskatt:{name:'Tarald',art:'røyskatten',col:'#C99A68'},
+ hare:{name:'Lilje',art:'haren',col:'#BFB3A2'},
+ pinnsvin:{name:'Piggfinn',art:'pinnsvinet',col:'#8A6B52'},
+ ugle:{name:'Olga',art:'ugla',col:'#A9906E'}
+};
+const CSAY={
+ ape:['Visste du at bananar eigentleg er bær? Jordbær er det ikkje. Eg er framleis forvirra.',
+  'Ein flokk apar kallast ein tropp. Troupers. Eg er sjølvsagt leiaren.','Eg trykte på ein knapp i går. Ingen veit kva han gjorde. Eg heller ikkje.',
+  'Eg tok ein bit av kalenderen din. Smakar tysdag.','Psst. Skal me finne på noko gale? Eg tenkte på noko med bananar.','Eg har gøymt ein banan ein stad på nettsida. Berre ein hint: han er gul.'],
+ gress:['Eg hoppar 20 gongar kroppslengda mi. Kva har DU gjort i dag?','Eg høyrer med magen. Det forklarar kvifor eg ikkje høyrer på deg.',
+  'Ja, ja, eg ser deg scrolle. Gjer noko nyttig, då.','Eg syng ved å gni beina mot vengene. Og ja, eg er betre enn du.','Gresshopper har hoppa sidan lenge før du kunne skrive. Berre så du veit det.','Fint design. Nesten. Du får ein firar.'],
+ royskatt:['Du har gjort meir enn du trur. Verkeleg.','Små steg tel òg. Berre ta det neste.','Hugs å drikke vatn og strekke på nakken. Du fortener det.',
+  'Røyskattar blir kvite om vinteren, berre halespissen er svart. Smart, ikkje sant? Du også, forresten.','Ein ting om gongen. Du klarer dette.','Eg trur på deg. Og eg er ganske god på å tru på folk.'],
+ hare:['Eg er rask, men eg har ingen planar. Fint liv.','Gulrøter? Overvurdert. Eg tar gjerne kløver.'],
+ pinnsvin:['Eg er ikkje sur. Eg er berre godt forsvart.','Eit pinnsvin har rundt 6 000 pigger. Men eg tek gjerne ein klem.'],
+ ugle:['Uhu. Eg er vaken når du er det òg. Sov litt i natt.','Eg ser alt. Spesielt det du gøymer i dokumenta dine.']
+};
+const CQ={
+ ape:[{q:'Raskt spørsmål: blå eller lilla?',a:['Blå','Lilla'],act:'farge'},{q:'Banan eller eple?',a:['Banan','Eple'],r:['Rett svar. Du får ein bananhandtrykk.','Eple?! Eg må sitte ned.']}],
+ gress:[{q:'Er du ferdig med det du skulle i dag?',a:['Ja','Nei'],r:['Imponerande. Nesten.','Det trudde eg. Opp og hopp, då.']},{q:'Blå eller lilla?',a:['Blå','Lilla'],act:'farge'}],
+ royskatt:[{q:'Korleis har dagen vore?',a:['Strålande','Heilt ok','Tung'],r:['Så bra! Ta med deg den kjensla vidare.','Heilt ok er heilt greitt. Du gjer det bra.','Ta det med ro. Gjer éin liten ting, så er det nok for no. Eg er her.']},{q:'Kaffe eller te?',a:['Kaffe','Te'],r:['Kaffe, mot! Ikkje gløym vatn òg.','Te, klokt val. Kos deg.']}]
+};
+const CEVT={ape:['Banantørking','Klatrekonkurranse i stua','Møte med ei kokosnøtt','Kosetime med bananskal','Viktig: ape rundt'],
+ gress:['Hoppetrening med Greta','Gresshoppekonsert (VIP)','Sassy-time. Ikkje spør.','Sole seg i gresset','Argumentere med ei sky']};
+const critOn=()=>{try{return localStorage.getItem('troupers.crit')!=='0';}catch(_){return true;}};
+function critSvg(k,px){return '<svg class="cr-s" viewBox="0 0 64 64" width="'+px+'" height="'+px+'" aria-hidden="true">'+CD[k]+'</svg>';}
+function critIc(k,px){const s=document.createElement('span');s.className='fun-ic';s.title=CR[k].name;s.innerHTML=critSvg(k,px);return s;}
+const CS={cur:null,hide:0,t:0,prank:0};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function critClose(){clearTimeout(CS.hide);if(CS.cur){CS.cur.remove();CS.cur=null;}}
+function critShow(k,text,buttons,ms){
+  critClose();
+  const me=CR[k];
+  const bub=h('div',{class:'cr-bub',role:'status'},
+    h('div',{class:'cr-h'},h('b',{style:'color:'+me.col},me.name),h('span',{class:'muted'},' · '+me.art),
+      h('button',{class:'icon-btn',type:'button','aria-label':'Lukk',onclick:critClose},icon('x',14))),
+    h('div',{class:'cr-t'},text),
+    buttons&&buttons.length?h('div',{class:'cr-b'},buttons.map(b=>h('button',{type:'button',class:'btn sm'+(b.p?' primary':''),onclick:b.f},b.l))):null);
+  const body=h('button',{type:'button',class:'cr-body','aria-label':'Snakk med '+me.name,onclick:()=>critTalk(k)});body.innerHTML=critSvg(k,76);
+  const w=h('div',{class:'crit',dataset:{k}},bub,body);
+  document.body.append(w);CS.cur=w;
+  const keep=()=>{clearTimeout(CS.hide);};const arm=()=>{CS.hide=setTimeout(critClose,ms||(buttons&&buttons.length?45000:14000));};
+  w.addEventListener('mouseenter',keep);w.addEventListener('mouseleave',arm);arm();
+}
+function critTalk(k){
+  const qs=CQ[k]||[];
+  if(qs.length&&Math.random()<.4)return critAsk(k,pick(qs));
+  critShow(k,pick(CSAY[k]));
+}
+function critReply(k,txt,extra){critShow(k,txt,extra||[{l:'OK',f:critClose}],16000);}
+function critAsk(k,q){
+  critShow(k,q.q,q.a.map((l,i)=>({l,f:()=>{
+    if(q.act==='farge')return critPrankColor(k,i);
+    critReply(k,(q.r&&q.r[i])||'Takk for svaret!');}})));
+}
+function critPrankColor(k,i){
+  const chosen=i===0?'blå':'lilla',other=i===0?'lilla':'blå';
+  const col=other==='lilla'?'#B79CF2':'#8FB8E8';
+  critApplyPrank(col,Date.now()+5*60000);
+  const lines={ape:'Aha, '+chosen+'! Då gjer eg alt '+other+'. Hihi.',gress:'«'+chosen+'», sa du. Eg valde '+other+'. Eg vinn.'};
+  critReply(k,lines[k]||('Då blir det '+other+'!'),[{l:'Ta tilbake',p:1,f:()=>{critApplyPrank(null);critClose();}},{l:'Behald',f:critClose}]);
+}
+function critApplyPrank(col,until){
+  clearTimeout(CS.prank);let st=document.getElementById('prank-st');
+  if(!col){if(st)st.remove();try{localStorage.removeItem('troupers.prank');}catch(_){}return;}
+  if(!st){st=document.createElement('style');st.id='prank-st';document.head.append(st);}
+  st.textContent=':root,:root[data-theme]{--y:'+col+'!important}';
+  try{localStorage.setItem('troupers.prank',JSON.stringify({c:col,u:until}));}catch(_){}
+  CS.prank=setTimeout(()=>critApplyPrank(null),Math.max(1000,until-Date.now()));
+}
+async function critPrankEvent(k){
+  const p=perm();if(!p.write||!S.uid)return critTalk(k);
+  const n=new Date();const hh=Math.min(22,Math.max(8,n.getHours()+1));const title=pick(CEVT[k]);
+  const colr=pick(PALETTE||['#8FB8E8']);
+  try{
+    const ref=await col('events').add({title,date:ymd(n),time:pad2(hh)+':00',endTime:'',color:colr,note:'Lagt inn av '+CR[k].name+'. Forsvinn om ein time.',createdBy:S.uid,createdAt:Date.now(),fun:k,expires:Date.now()+3600000});
+    setTimeout(()=>{try{col('events').doc(ref.id).delete().catch(()=>{});}catch(_){}},3600000+2000);
+    critShow(k,k==='ape'?'Eg la inn ei VIKTIG hending i kalenderen din i dag kl. '+pad2(hh)+':00: «'+title+'». Ikkje spør. Den forsvinn om ein time.':'Eg la inn «'+title+'» kl. '+pad2(hh)+':00. Ikkje takk. Det forsvinn om ein time.',
+      [{l:'Sjå i kalenderen',p:1,f:()=>{critClose();S.cal.sel=ymd(n);S.cal.view='dag';setTab('kalender');}},{l:'Hehe',f:critClose}],20000);
+  }catch(e){critTalk(k);}
+}
+function critAuto(){
+  clearTimeout(CS.t);
+  const ae=document.activeElement;const busy=!critOn()||document.hidden||!S.uid||S.modal||CS.cur||(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName));
+  if(busy){CS.t=setTimeout(critAuto,busy&&critOn()?30000:120000);return;}
+  const k=pick(['ape','gress','royskatt']);const r=Math.random();
+  if((k==='ape'||k==='gress')&&r<.25)critPrankEvent(k);
+  else if(r<.65&&CQ[k])critAsk(k,pick(CQ[k]));
+  else critShow(k,pick(CSAY[k]));
+  CS.t=setTimeout(critAuto,(3+Math.random()*4)*60000);
+}
+document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-critter]');if(!t)return;const k=t.getAttribute('data-critter');if(!CR[k])return;
+  if(CQ[k])critTalk(k);else critShow(k,pick(CSAY[k]));});
+document.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const t=e.target.closest&&e.target.closest('[data-critter]');if(t){e.preventDefault();t.dispatchEvent(new MouseEvent('click',{bubbles:true}));}});
+function critInit(){
+  try{const p=JSON.parse(localStorage.getItem('troupers.prank')||'null');if(p&&p.u>Date.now())critApplyPrank(p.c,p.u);else localStorage.removeItem('troupers.prank');}catch(_){}
+  CS.t=setTimeout(critAuto,(25+Math.random()*35)*1000);
+}
+critInit();
+function critForest(){
+  const pos=[['ape',110,330],['hare',470,300],['gress',330,380],['royskatt',640,352],['pinnsvin',860,386],['ugle',955,268]];
+  return pos.map(([k,x,y])=>'<g class="fcrit" data-critter="'+k+'" tabindex="0" role="button" aria-label="'+CR[k].name+', '+CR[k].art+'. Trykk for å snakke" transform="translate('+x+' '+y+')">'
+    +'<title>'+CR[k].name+' ('+CR[k].art+')</title><ellipse cx="0" cy="2" rx="22" ry="5" fill="#000" opacity=".14"/>'
+    +'<g class="cr-s" transform="translate(-29 -57) scale(.9)">'+CD[k]+'</g><text y="16" class="cr-n" text-anchor="middle">'+CR[k].name+'</text></g>').join('');
+}
+/* hending-utløp */
+function critExpired(e){return e&&e.expires&&e.expires<Date.now();}
+setInterval(()=>{try{
+  let ch=false;const now=Date.now();
+  for(const id in (S.data.events||{})){const e=S.data.events[id];
+    if(e&&e.expires){if(e.expires<now){ch=true;if(e.createdBy===S.uid)col('events').doc(id).delete().catch(()=>{});}}}
+  if(ch)scheduleRender();}catch(_){}},30000);
+
 /* ---------- språk (norsk/engelsk) ---------- */
 const EN={'Mi side':'My page','Oversikt':'Overview','Dokument':'Documents','Kalender':'Calendar','Mål':'Goals','Skog':'Forest','Meldingar':'Messages','Innstillingar':'Settings',
-'Prosjekt':'Projects','Nytt prosjekt':'New project','To-do':'To-do','Å gjere':'To do','Held på':'In progress','Ferdig':'Done','Prioritet':'Priority','Per person':'By person','Liste':'List','Kanban':'Kanban','Ingen ansvarleg':'Nobody assigned','Opne skogen':'Open the forest','Invitasjonskode':'Invitation code','Kopier':'Copy','Avslutt og forlat':'End and leave','Fargen din':'Your colour','Utsjånad':'Appearance','Lyst':'Light','Mørkt':'Dark','Automatisk':'Automatic','Alle prosjekt':'All projects','Ferdig':'Done','Bli med i prosjekt':'Join a project','Logg ut':'Log out','Logg inn':'Log in','Lag brukar':'Create account','Ny her? Lag brukar':'New here? Create account','Har du brukar? Logg inn':'Have an account? Log in',
+'Prosjekt':'Projects','Nytt prosjekt':'New project','Dyr på sida':'Animals on the page','På':'On','Av':'Off','To-do':'To-do','Å gjere':'To do','Held på':'In progress','Ferdig':'Done','Prioritet':'Priority','Per person':'By person','Liste':'List','Kanban':'Kanban','Ingen ansvarleg':'Nobody assigned','Opne skogen':'Open the forest','Invitasjonskode':'Invitation code','Kopier':'Copy','Avslutt og forlat':'End and leave','Fargen din':'Your colour','Utsjånad':'Appearance','Lyst':'Light','Mørkt':'Dark','Automatisk':'Automatic','Alle prosjekt':'All projects','Ferdig':'Done','Bli med i prosjekt':'Join a project','Logg ut':'Log out','Logg inn':'Log in','Lag brukar':'Create account','Ny her? Lag brukar':'New here? Create account','Har du brukar? Logg inn':'Have an account? Log in',
 'Du er ikkje med i nokon prosjekt enno.':'You are not in any projects yet.','Lastar …':'Loading …','Berre du ser det som ligg her.':'Only you can see what is here.',
 'I dag':'Today','Veker:':'Weeks:','Ny hending':'New event','Dag':'Day','Veke':'Week','Månad':'Month','Hendingar':'Events','Mål ':'Goals ','Ingenting':'Nothing','Førre':'Previous','Neste':'Next','Førre veke':'Previous week','Neste veke':'Next week',
 'Heile dagen':'All day','Avslått':'Declined','Avslå':'Decline','Eg er med likevel':'I will join after all','Du er med.':'You are attending.','Du har avslått.':'You have declined.','Kven er med?':'Who is attending?','Alle':'Everyone','Ingen':'None','Farge':'Colour','Merknad':'Note','Merknad (valfritt)':'Note (optional)','Legg til tittel':'Add title','Tittel':'Title','Dato':'Date','Frist':'Due date','Ansvarleg':'Responsible','Ferdig':'Done','Slett':'Delete','Avbryt':'Cancel','Lagre':'Save','Lukk':'Close','Rediger':'Edit','Hending':'Event','Til og med (valfritt)':'Until (optional)',
