@@ -1231,6 +1231,9 @@ function personColor(u){
   if(!u)return '#5E6E78';
   if(u===S.uid){let c='';try{c=localStorage.getItem('troupers.mycolor')||'';}catch(_){}if(PCOLORS.indexOf(c)>=0)return c;}
   if(COLORS[u]&&PCOLORS.indexOf(COLORS[u])>=0)return COLORS[u];
+  const ids=Object.keys((S.data&&S.data.members)||{}).sort();const ix=ids.indexOf(u);
+  if(ix>=0){const taken=new Set(ids.filter(x=>x!==u).map(x=>(x===S.uid?(()=>{try{return localStorage.getItem('troupers.mycolor')||'';}catch(_){return '';}})():COLORS[x])||'').filter(Boolean));
+    const free=PCOLORS.filter(c=>!taken.has(c));return (free.length?free:PCOLORS)[ix%(free.length||PCOLORS.length)];}
   let hh=0;for(const ch of String(u))hh=(hh*31+ch.charCodeAt(0))>>>0;return PCOLORS[hh%PCOLORS.length];
 }
 const nameOf=u=>u===S.uid?((S.me&&S.me.name)||'Du'):(NAMES[u]||'…');
