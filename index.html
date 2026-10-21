@@ -1894,7 +1894,7 @@ function viewOversikt(){
   }else{
     forest=h('div',{class:'ov-forest'},plantBtn(p.write));
   }
-  return h('div',{class:'ov-wrap'},calCard,forest);
+  return h('div',{class:'ov-wrap'},impSection(),calCard,forest);
 }
 
 /* ---------- to-do ---------- */
@@ -3120,6 +3120,15 @@ function viewPrat(){
 }
 
 /* "Nytt" øvst på oversikta */
+function impSection(){
+  const imp=myNotifs().filter(n=>!n.read&&n.type==='viktig');if(!imp.length)return null;
+  const pn=pid=>{const m=S.metas[pid];return m&&m.name?m.name:'';};
+  const go=n=>{markRead(n);if(n.pid!==S.active)switchSpace(n.pid);S.tab=n.tab&&n.tab!=='oversikt'?n.tab:'oversikt';renderAll();};
+  return h('section',{class:'card nyt-imp',role:'alert'},h('h3',null,megaIcon(),'Viktig'),h('div',{class:'rows'},imp.map(n=>h('div',{class:'nyt-r'},
+    h('button',{type:'button',class:'link-t nyt-t',onclick:()=>go(n)},n.text),
+    h('span',{class:'s muted'},(S.active===PRIV||n.pid!==S.active?pn(n.pid)+' · ':'')+nTime(n.at)),
+    h('button',{class:'icon-btn',type:'button','aria-label':'Merk som lese',onclick:()=>markRead(n)},icon('check',14))))));
+}
 function nytSection(){
   const all=myNotifs();const unread=all.filter(n=>!n.read);
   const imp=unread.filter(n=>n.type==='viktig');const rest=unread.filter(n=>n.type!=='viktig');
