@@ -26,7 +26,7 @@ service cloud.firestore {
       allow update, delete: if owner();
 
       match /members/{uid} {
-        allow read: if mem();
+        allow read: if mem() || (signed() && request.auth.uid == uid);
         // bli med sjølv som medlem, eller opprett deg som eigar av eige prosjekt
         allow create: if signed() && request.auth.uid == uid && (
           request.resource.data.role == 'medlem' ||
