@@ -2094,6 +2094,20 @@ async function addSub(gid,inp,due,who){
   try{const n=Date.now();await col('subgoals').add({goal:gid,title:t,due:due||'',assignee:who||'',done:false,order:n,createdBy:S.uid,createdAt:n});assignNotify('',who,t);logAct('mal','la inn delmålet «'+t+'»','mal');S.ui.sform=null;renderView();}catch(e){fail(e);}
 }
 function metaBits(x){return [dueBadge(x),x.assignee?whoChip(x.assignee,false):null];}
+async function resetGoalDocs(g){
+  for(const sb of subsOf(g.id))if(sb.done)await col('subgoals').doc(sb.id).update({done:false,doneAt:0,doneBy:''});
+  if(g.done)await gcol(g).doc(g.id).update({done:false,doneAt:0,doneBy:''});
+}
+async function resetGoal(g){
+  if(!(await confirmBox('Nullstille målet?','Alle delmåla blir ikkje gjennomførte, og trea for «'+g.title+'» forsvinn frå skogen.','Nullstill')))return;
+  try{await resetGoalDocs(g);toast('Målet er nullstilt.');}catch(e){fail(e);}
+}
+async function resetForest(){
+  if(!(await confirmBox('Nullstille heile skogen?','Alle tre forsvinn, og alle mål og delmål blir ikkje gjennomførte.','Nullstill alt')))return;
+  try{for(const g of goalsArr())await resetGoalDocs(g);
+    for(const id of Object.keys(S.data.chapters||{}))await col('chapters').doc(id).delete();
+    toast('Skogen er nullstilt.');}catch(e){fail(e);}
+}
 async function setGoalForest(g,on){try{await gcol(g).doc(g.id).update({forest:!!on});}catch(e){fail(e);}}
 async function setGoalSpecies(g,sp){try{await gcol(g).doc(g.id).update({species:sp});}catch(e){fail(e);}}
 async function setSubSpecies(x,sp){try{await col('subgoals').doc(x.id).update({species:sp});}catch(e){fail(e);}}
@@ -2132,6 +2146,7 @@ function viewMal(){
         h('input',{type:'checkbox','aria-label':'Målet er ferdig',checked:!!g.done,disabled:!p.write,onchange:ev=>setGoalDone(g,ev.target.checked)}),
         h('button',{type:'button',class:'link-t gt ed',onclick:()=>openGoalModal(Object.assign({_kind:'goal'},g))},g.title,icon('edit',16)),
         h('span',{class:'row',style:'gap:8px;margin-left:auto'},metaBits(g),
+          (p.write&&(g.done||subs.some(q=>q.done)))?h('button',{class:'btn ghost sm',type:'button',title:'Gjer målet og delmåla ikkje gjennomførte, og fjern trea',onclick:()=>resetGoal(g)},'↺ Nullstill'):null,
           canDel(g)?h('button',{class:'btn ghost sm',type:'button',onclick:()=>delGoal(g)},icon('trash',14),'Slett'):null)),
       h('div',{class:'bar'},h('i',{style:'width:'+pct+'%'})),
       h('p',{class:'s muted',style:'margin:6px 0 8px'},g.forest===false?'Dette målet har ingen skog.':(subs.length?d+' av '+subs.length+' delmål ferdige · '+pct+' % · ein skog med '+subs.length+' tre':'Ingen delmål enno. Utan delmål blir målet eitt tre i skogen.')),
@@ -2855,7 +2870,7 @@ function viewSkog(){
   const rec=recent.length?h('section',{class:'card'},h('h3',null,hb('check','blue'),'Sist planta'),
     h('div',{class:'rows'},recent.map(c=>{const b=bkEff()[c.book];
       return h('div',{class:'r'},h('div',{class:'t'},(b.short||b.title)+(b.goal?' · delmål ':' kapittel ')+c.n),whoChip(c.by,true),h('span',{class:'s'},relTime(c.at)));}))):null;
-  return h('div',{style:'display:flex;flex-direction:column;gap:16px'},scene,panel,h('div',{class:'grid-c sk-books'},cards),rec,p.manage?h('div',null,h('button',{class:'btn ghost sm',type:'button',onclick:()=>openBooksModal()},icon('edit'),'Rediger bøker')):null);
+  return h('div',{style:'display:flex;flex-direction:column;gap:16px'},scene,panel,h('div',{class:'grid-c sk-books'},cards),rec,p.write?h('div',{class:'row',style:'gap:8px'},p.manage?h('button',{class:'btn ghost sm',type:'button',onclick:()=>openBooksModal()},icon('edit'),'Rediger bøker'):null,h('button',{class:'btn ghost sm',type:'button',onclick:resetForest},'↺ Nullstill skogen')):null);
 }
 
 /* ---------- folk og roller ---------- */
