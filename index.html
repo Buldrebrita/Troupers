@@ -974,6 +974,7 @@ input[type=checkbox]:focus-visible{outline:3px solid var(--accent);outline-offse
 .fv-nav{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:72px;border:0;background:rgba(0,0,0,.35);color:#fff;font-size:38px;border-radius:10px;opacity:.7}.fv-nav:hover{opacity:1}.fv-nav.l{left:8px}.fv-nav.r{right:8px}
 .fv-stage:fullscreen,.fv-deck:fullscreen{background:#000}
 .fv-h a.btn{text-decoration:none}
+.sub-td[aria-pressed=true]{background:var(--y);box-shadow:inset 0 0 0 1.5px var(--edge)}
 </style>
 
 <div id="root"><div class="boot"><h1>Troupers</h1><p class="muted">Lastar …</p></div></div>
@@ -1393,7 +1394,7 @@ function renderTabs(){
   const t=$('#tabs');
   const open=goalsArr().filter(x=>!x.done).length;
   const sd=skogStats().done;
-  const defs=[['oversikt','Oversikt','home','violet'],['dokument','Dokument','doc','blue',Object.keys(S.data.items).length],['kalender','Kalender','calendar','rose'],['mal','Mål','target','orange',open],['todo','To-do','check','teal',Object.values(S.data.todos||{}).filter(x=>x.status!=='done').length],['skog','Skog','tree','green',sd]];
+  const defs=[['oversikt','Oversikt','home','violet'],['dokument','Dokument','doc','blue',Object.keys(S.data.items).length],['kalender','Kalender','calendar','rose'],['mal','Mål','target','orange',open],['todo','To-do','check','teal',todosArr().filter(x=>x.status!=='done').length],['skog','Skog','tree','green',sd]];
   if(S.active===PRIV)defs.splice(1,0,['prosjekt','Prosjekt','tree','blue',S.myList.length]);
   if(S.active!==PRIV)defs.push(['prat','Meldingar','chat','teal',unreadCount(S.active,'prat')]);
   defs.push(['innst','Innstillingar','gear','amber']);
@@ -1901,14 +1902,27 @@ const TD_ST=[['todo','Å gjere'],['doing','Held på'],['done','Ferdig']];
 const TD_PR=[['high','Høg'],['mid','Middels'],['low','Låg']];
 const TD_VIEWS=[['liste','Liste','list'],['kanban','Kanban','target'],['prio','Prioritet','bell'],['person','Per person','users']];
 const tdView=()=>{let v='kanban';try{v=localStorage.getItem('troupers.todoview')||'kanban';}catch(_){}return TD_VIEWS.some(x=>x[0]===v)?v:'kanban';};
-function todosArr(){return Object.entries(S.data.todos||{}).map(([id,x])=>Object.assign({status:'todo',prio:'mid'},x,{id})).sort((a,b)=>(a.order||a.createdAt||0)-(b.order||b.createdAt||0));}
+function todosArr(){
+  const real=Object.entries(S.data.todos||{}).map(([id,x])=>Object.assign({status:'todo',prio:'mid'},x,{id}));
+  const virt=Object.entries(S.data.subgoals||{}).filter(([id,x])=>x&&x.todo).map(([id,x])=>({id:'sg_'+id,_sub:Object.assign({id},x),title:x.title,status:x.done?'done':(x.tdStatus==='doing'?'doing':'todo'),prio:x.tdPrio||'mid',due:x.due||'',assignee:x.assignee||'',order:x.createdAt||0,createdAt:x.createdAt||0,createdBy:x.createdBy}));
+  return real.concat(virt).sort((a,b)=>(a.order||a.createdAt||0)-(b.order||b.createdAt||0));}
 async function addTodo(inp,due,who){
   const t=inp.value.trim();if(!t){inp.focus();return;}
   try{const n=Date.now();await col('todos').add({title:t,status:'todo',prio:'mid',due:due||'',assignee:who||'',order:n,createdBy:S.uid,createdAt:n});
     if(who&&who!==S.uid)sendNotif(S.active,who,'tildelt','«'+t+'» er tildelt deg','todo');
     logAct('todo','la inn to-do «'+t+'»','todo');S.ui.tform=false;renderView();}catch(e){fail(e);}
 }
-async function tdSet(x,patch){try{await col('todos').doc(x.id).update(patch);}catch(e){fail(e);}}
+async function tdSet(x,patch){
+  if(x._sub){const sp={};
+    if('title' in patch)sp.title=patch.title;if('due' in patch)sp.due=patch.due;if('assignee' in patch)sp.assignee=patch.assignee;if('prio' in patch)sp.tdPrio=patch.prio;
+    try{
+      if('status' in patch){sp.tdStatus=patch.status==='doing'?'doing':'todo';
+        if(patch.status==='done'&&!x._sub.done)await toggleSub(x._sub.id,true);
+        else if(patch.status!=='done'&&x._sub.done)await toggleSub(x._sub.id,false);}
+      if(Object.keys(sp).length)await col('subgoals').doc(x._sub.id).update(sp);
+    }catch(e){fail(e);}return;}
+  try{await col('todos').doc(x.id).update(patch);}catch(e){fail(e);}}
+async function setSubTodo(x,on){try{await col('subgoals').doc(x.id).update({todo:!!on});if(on)toast('Delmålet ligg no i To-do.');}catch(e){fail(e);}}
 function openTodoModal(x){
   const p=perm();
   if(!p.write){openModal(x.title,h('div',{class:'form'},h('p',{class:'muted'},(x.due?'Frist '+fmtLong(x.due)+' · ':'')+(TD_ST.find(s=>s[0]===x.status)||[])[1]),h('div',{class:'row end'},h('button',{class:'btn',type:'button',onclick:closeModal},'Lukk'))));return;}
@@ -1923,7 +1937,7 @@ function openTodoModal(x){
     if(nw&&nw!==x.assignee&&nw!==S.uid)sendNotif(S.active,nw,'tildelt','«'+v+'» er tildelt deg','todo');
     closeModal();renderView();}},
     title,h('div',{class:'row',style:'gap:10px;flex-wrap:wrap'},h('label',{class:'lbl'},'Status',st),h('label',{class:'lbl'},'Prioritet',pr),h('label',{class:'lbl'},'Frist',due),who?h('label',{class:'lbl'},'Ansvarleg',who):null),
-    h('div',{class:'row'},canDel(x)?h('button',{class:'btn danger',type:'button',style:'margin-right:auto',onclick:async()=>{closeModal();try{await col('todos').doc(x.id).delete();}catch(er){fail(er);}}},icon('trash'),'Slett'):h('span',{style:'margin-right:auto'}),
+    h('div',{class:'row'},x._sub?h('button',{class:'btn',type:'button',style:'margin-right:auto',onclick:async()=>{closeModal();await setSubTodo(x._sub,false);}},'Fjern frå To-do'):canDel(x)?h('button',{class:'btn danger',type:'button',style:'margin-right:auto',onclick:async()=>{closeModal();try{await col('todos').doc(x.id).delete();}catch(er){fail(er);}}},icon('trash'),'Slett'):h('span',{style:'margin-right:auto'}),
       h('button',{class:'btn',type:'button',onclick:closeModal},'Avbryt'),h('button',{class:'btn primary',type:'submit'},'Lagre')));
   openModal('To-do',f);hydrate(S.modal);
 }
@@ -1932,7 +1946,7 @@ function tdCard(x,p){
   const c=h('div',{class:'td'+(done?' is-done':''),draggable:p.write?'true':'false',dataset:{id:x.id},style:x.assignee?'--pc:'+personColor(x.assignee):null},
     h('input',{type:'checkbox','aria-label':'Ferdig',checked:done,disabled:!p.write,onchange:e=>tdSet(x,{status:e.target.checked?'done':'todo'})}),
     h('div',{class:'t'},h('button',{type:'button',class:'link-t ed',onclick:()=>openTodoModal(x)},h('span',{class:'tl'},x.title),icon('edit',14)),
-      h('div',{class:'s row',style:'gap:8px'},h('i',{class:'pr pr-'+x.prio,title:'Prioritet: '+(TD_PR.find(q=>q[0]===x.prio)||[])[1]}),dueBadge(x),x.assignee?whoChip(x.assignee,false):null)));
+      h('div',{class:'s row',style:'gap:8px'},x._sub?h('span',{class:'nt-tag tone-orange',title:'Kjem frå eit delmål'},'Delmål'):null,h('i',{class:'pr pr-'+x.prio,title:'Prioritet: '+(TD_PR.find(q=>q[0]===x.prio)||[])[1]}),dueBadge(x),x.assignee?whoChip(x.assignee,false):null)));
   c.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',x.id);e.dataTransfer.effectAllowed='move';c.classList.add('drag');});
   c.addEventListener('dragend',()=>c.classList.remove('drag'));
   return c;
@@ -2104,6 +2118,7 @@ function viewMal(){
       h('input',{type:'checkbox','aria-label':'Ferdig',checked:!!x.done,disabled:!p.write,onchange:ev=>toggleSub(x.id,ev.target.checked)}),
       h('div',{class:'t'},h('button',{type:'button',class:'link-t ed',onclick:()=>openGoalModal(Object.assign({_kind:'sub'},x))},h('span',{class:'tl'},x.title),icon('edit',14)),
         h('div',{class:'s row',style:'gap:8px'},metaBits(x))),
+      p.write?h('button',{class:'btn sm sub-td',type:'button','aria-pressed':String(!!x.todo),title:x.todo?'Fjern frå To-do':'Legg til som oppgåve i To-do',onclick:()=>setSubTodo(x,!x.todo)},icon('check',14),'To-do'):null,
       canDel(x)?h('button',{class:'icon-btn',type:'button','aria-label':'Slett delmål',onclick:()=>delSub(x.id)},icon('trash',16)):null));
     const sf=S.ui.sform===g.id;
     const subAdd=!p.write?null:sf
