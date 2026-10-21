@@ -787,7 +787,7 @@ input[type=checkbox]:focus-visible{outline:3px solid var(--accent);outline-offse
 .pj-card{display:flex;align-items:center;gap:8px;text-align:left;border:2px solid var(--edge);border-radius:var(--wob-s);background:color-mix(in srgb,var(--pc) 22%,var(--surface));padding:10px 12px;font:400 18px var(--f-display);color:var(--ink);box-shadow:2px 2px 0 var(--edge)}
 .pj-card .dot{width:12px;height:12px;border-radius:50%;flex:none}.pj-card .nm{flex:1}.pj-card .muted{font:400 14px var(--f-body)}
 .pj-card:hover{background:color-mix(in srgb,var(--pc) 38%,var(--surface))}
-.tm{cursor:text;text-align:center;font-size:34px}.tm:hover{background:color-mix(in srgb,var(--y) 40%,transparent);border-radius:8px}
+.tmr{cursor:text;text-align:center;font-size:34px;color:var(--ink)}.tmr:hover{background:color-mix(in srgb,var(--y) 40%,transparent);border-radius:8px}
 .tm-inp{width:100%;box-sizing:border-box;font:inherit;text-align:center;border:2px dashed var(--edge);border-radius:8px;background:var(--surface);color:var(--ink);padding:0}
 .tm-b{gap:6px;justify-content:center}
 .wtabs{display:flex;flex-wrap:wrap;gap:2px;justify-content:center}
@@ -802,6 +802,9 @@ input[type=checkbox]:focus-visible{outline:3px solid var(--accent);outline-offse
 .fx-msg{position:absolute;top:38%;left:0;right:0;text-align:center;font:400 clamp(34px,7vw,80px) var(--f-display);color:var(--ink);text-shadow:3px 3px 0 var(--y);animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
 @keyframes pop{from{transform:scale(.3);opacity:0}}
 @media (prefers-reduced-motion:reduce){.ring,.fx-over i,.fx-msg{animation:none}}
+.top-r{gap:8px}.theme-btn{font-size:18px;width:36px;height:36px;border:2px solid var(--edge);border-radius:50%;background:var(--surface)}
+.msg{max-width:min(760px,100%);padding:12px 16px;cursor:default;font-size:18px;line-height:1.4}
+.msg .mt.big{font-size:26px}.msg .mimg{max-width:100%;max-height:420px}
 </style>
 
 <div id="root"><div class="boot"><h1>Troupers</h1><p class="muted">Lastar …</p></div></div>
@@ -1199,7 +1202,7 @@ function renderTop(){
     h('button',{class:'icon-btn menu-btn',id:'btn-menu',type:'button','aria-label':'Opne meny',onclick:()=>toggleNav(true)},icon('menu',20)),
     h('div',{class:'pj',style:'background:'+mc},isP?String(m.name||'?').trim().charAt(0).toUpperCase():icon('home',22)),
     h('div',{class:'ttl'},h('h1',null,m.name,ended()?h('span',{class:'pill',style:'margin-left:10px;font-size:14px;vertical-align:middle'},'Avslutta'):''),sub),
-    h('div',{class:'top-r'},userButton())
+    h('div',{class:'top-r'},themeBtn(),userButton())
   );
 }
 function unreadCount(pid,tab){
@@ -2646,12 +2649,12 @@ async function reactMsg(m,e){
   try{await col('messages').doc(m.id).update({react:r});}catch(er){fail(er);}
 }
 function msgBubble(m){
-  const open=S.ui.msgOpen.has(m.id);const me=m.by===S.uid;
+  const open=true;const me=m.by===S.uid;
   const toggle=()=>{if(open)S.ui.msgOpen.delete(m.id);else S.ui.msgOpen.add(m.id);renderView();};
   const first=m.title||(m.text||'').split('\n')[0]||(m.poll?'Avstemning: '+m.poll.q:m.img?'Bilete':'Melding');
   const badges=[m.img?'🖼':null,m.ref?'📎':null,m.poll?'📊':null,(m.text&&m.title)?'…':null].filter(Boolean);
   const head=h('div',{class:'mh2'},whoChip(m.by,true),h('span',{class:'s muted'},nTime(m.at)),m.kind==='viktig'?megaIcon():null,
-    h('span',{class:'chev'},icon(open?'chev-l':'chev-r',14)));
+    null);
   const stop=e=>e.stopPropagation();
   let body;
   if(!open)body=h('div',{class:'mb collapsed'},h('span',{class:'mt'},first),badges.length?h('span',{class:'bd'},badges.join(' ')):null);
@@ -2673,8 +2676,7 @@ function msgBubble(m){
       canDel(m)?h('button',{class:'icon-btn',type:'button','aria-label':'Slett melding',onclick:()=>col('messages').doc(m.id).delete().catch(fail)},icon('trash',14)):null));
     body=h('div',{class:'mx'},nodes);
   }
-  const el=h('div',{class:'msg'+(me?' me':'')+(m.kind==='viktig'?' imp':'')+(open?' open':''),role:'button',tabindex:'0','aria-expanded':String(open),onclick:toggle,
-    onkeydown:e=>{if(e.target===e.currentTarget&&(e.key==='Enter'||e.key===' ')){e.preventDefault();toggle();}}},head,body);
+  const el=h('div',{class:'msg'+(me?' me':'')+(m.kind==='viktig'?' imp':'')+' open',},head,body);
   return el;
 }
 function viewPrat(){
@@ -2719,6 +2721,8 @@ function openProfile(){
   const f=h('form',{class:'form',onsubmit:async e=>{e.preventDefault();const n=nm.value.trim();if(!n)return;
     try{if(W.__profile&&W.__profile.rename)await W.__profile.rename(n);S.me=await S.user.me();if(S.me)S.me.name=n;NAMES[S.uid]=n;closeModal();renderAll();toast('Namnet er endra.');}catch(er){fail(er);}}},
     h('label',{class:'lbl'},'Brukarnamn',nm),
+    h('div',{class:'lbl'},'Utsjånad',h('div',{class:'seg',role:'group','aria-label':'Utsjånad'},[['lys','Lyst'],['mork','Mørkt'],['auto','Automatisk']].map(([k,l])=>
+      h('button',{type:'button','aria-pressed':String(themeGet()===k),onclick:e=>{themeSet(k);e.currentTarget.parentNode.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false'));e.currentTarget.setAttribute('aria-pressed','true');renderTop();}},l)))),
     h('div',{class:'row end'},h('button',{class:'btn',type:'button',onclick:closeModal},'Avbryt'),h('button',{class:'btn primary',type:'submit'},'Lagre namn')),
     h('hr',{style:'border:0;border-top:1.5px dashed var(--line);width:100%'}),
     h('div',{class:'row',style:'gap:10px;flex-wrap:wrap'},
@@ -2736,6 +2740,16 @@ async function purgePrivate(){
     for(const sub of ['blocks','chunks']){const c=b.collection('items').doc(d.id).collection(sub);const cs=await c.get();for(const x of cs.docs)await c.doc(x.id).delete();}
     await b.collection('items').doc(d.id).delete();
   }
+}
+const THEMES=['auto','lys','mork'];
+function themeGet(){let t='auto';try{t=localStorage.getItem('troupers.theme')||'auto';}catch(_){}return THEMES.indexOf(t)<0?'auto':t;}
+function themeApply(t){const r=document.documentElement;if(t==='lys')r.setAttribute('data-theme','light');else if(t==='mork')r.setAttribute('data-theme','dark');else r.removeAttribute('data-theme');}
+function themeSet(t){try{localStorage.setItem('troupers.theme',t);}catch(_){}themeApply(t);}
+themeApply(themeGet());
+function isDark(){const t=themeGet();return t==='mork'||(t==='auto'&&matchMedia('(prefers-color-scheme:dark)').matches);}
+function themeBtn(){
+  const b=h('button',{class:'icon-btn theme-btn',type:'button','aria-label':'Bytt mellom lyst og mørkt',title:'Lyst / mørkt',onclick:()=>{themeSet(isDark()?'lys':'mork');b.textContent=isDark()?'☀️':'🌙';}},isDark()?'☀️':'🌙');
+  return b;
 }
 function userButton(){
   const me=S.me||{};
@@ -2806,7 +2820,7 @@ function doneFx(msg){
 }
 /* felles nedteljar: st={run,end,left,total}; klikk på tala for å endre */
 function timerBody(st,opt){
-  const disp=h('div',{class:'w-big mono tm',role:'button',tabindex:'0',title:'Trykk for å endre tida'});
+  const disp=h('div',{class:'w-big mono tmr',role:'button',tabindex:'0',title:'Trykk for å endre tida'});
   const left=()=>st.run?Math.max(0,st.end-Date.now()):st.left*1000;
   const up=()=>{if(st.run&&Date.now()>=st.end){st.run=false;st.left=st.total;doneFx(opt.msg());if(opt.done)opt.done();refreshWidgets(true);return;}
     if(!disp.querySelector('input'))disp.textContent=fmtT(left());};
@@ -2870,7 +2884,7 @@ setInterval(()=>{WID.tick.forEach(f=>{try{f();}catch(_){}});},500);
 
 /* ---------- språk (norsk/engelsk) ---------- */
 const EN={'Mi side':'My page','Oversikt':'Overview','Dokument':'Documents','Kalender':'Calendar','Mål':'Goals','Skog':'Forest','Meldingar':'Messages','Innstillingar':'Settings',
-'Prosjekt':'Projects','Nytt prosjekt':'New project','Alle prosjekt':'All projects','Ferdig':'Done','Bli med i prosjekt':'Join a project','Logg ut':'Log out','Logg inn':'Log in','Lag brukar':'Create account','Ny her? Lag brukar':'New here? Create account','Har du brukar? Logg inn':'Have an account? Log in',
+'Prosjekt':'Projects','Nytt prosjekt':'New project','Utsjånad':'Appearance','Lyst':'Light','Mørkt':'Dark','Automatisk':'Automatic','Alle prosjekt':'All projects','Ferdig':'Done','Bli med i prosjekt':'Join a project','Logg ut':'Log out','Logg inn':'Log in','Lag brukar':'Create account','Ny her? Lag brukar':'New here? Create account','Har du brukar? Logg inn':'Have an account? Log in',
 'Du er ikkje med i nokon prosjekt enno.':'You are not in any projects yet.','Lastar …':'Loading …','Berre du ser det som ligg her.':'Only you can see what is here.',
 'I dag':'Today','Veker:':'Weeks:','Ny hending':'New event','Dag':'Day','Veke':'Week','Månad':'Month','Hendingar':'Events','Mål ':'Goals ','Ingenting':'Nothing','Førre':'Previous','Neste':'Next','Førre veke':'Previous week','Neste veke':'Next week',
 'Heile dagen':'All day','Avslått':'Declined','Avslå':'Decline','Eg er med likevel':'I will join after all','Du er med.':'You are attending.','Du har avslått.':'You have declined.','Kven er med?':'Who is attending?','Alle':'Everyone','Ingen':'None','Farge':'Colour','Merknad':'Note','Merknad (valfritt)':'Note (optional)','Legg til tittel':'Add title','Tittel':'Title','Dato':'Date','Frist':'Due date','Ansvarleg':'Responsible','Ferdig':'Done','Slett':'Delete','Avbryt':'Cancel','Lagre':'Save','Lukk':'Close','Rediger':'Edit','Hending':'Event','Til og med (valfritt)':'Until (optional)',
