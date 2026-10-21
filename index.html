@@ -290,6 +290,34 @@ a.link-t{text-decoration:none}
 .pill[class*="role-"]{background:color-mix(in srgb,var(--tc) 15%,var(--surface));color:var(--tc)}
 .role-eigar{--tc:var(--violet)}.role-redaktor{--tc:var(--blue)}.role-medlem{--tc:var(--green)}.role-lesar{--tc:var(--slate)}
 .pill.amber{background:color-mix(in srgb,var(--amber) 16%,var(--surface));color:var(--amber)}
+.dl-bar .dsort{max-width:150px;padding:6px 8px}
+.crumbs{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:15px}
+.crumb{display:inline-flex;align-items:center;gap:5px;border:0;background:none;color:var(--ink);padding:3px 8px;border-radius:8px;font:inherit}
+.crumb:disabled{font-weight:700;cursor:default}
+button.crumb:not(:disabled):hover{background:var(--surface-2);text-decoration:underline}
+.crumb.now{color:var(--muted)}.crumbs .sep{color:var(--muted)}
+.dropt{outline:2.5px dashed var(--violet,#7A56C2)!important;outline-offset:-3px;background:color-mix(in srgb,var(--y,#FFE58A) 40%,transparent)!important}
+.dragging{opacity:.45}
+.di.dr{grid-template-columns:40px minmax(0,1fr) 150px 120px 80px 36px}
+.di.dr .sz{font:400 13px var(--f-body);color:var(--muted)}
+.di.dh{padding:6px 14px;color:var(--muted);font-size:13px}.di.dh .th{display:none}
+.dhb{border:0;background:none;text-align:left;padding:0;color:var(--muted);font:inherit}.dhb:hover{color:var(--ink);text-decoration:underline}
+.di.isdir .link-t{font-weight:700}
+.di.dr:not(.dh):hover{background:color-mix(in srgb,var(--y,#FFE58A) 22%,var(--surface))}
+.dl.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;padding:12px;background:none;border:0}
+.dc{position:relative;display:flex;flex-direction:column;gap:8px;border:2px solid var(--edge,var(--line));border-radius:14px;background:var(--surface);padding:10px;cursor:pointer;min-width:0}
+.dc:hover{background:color-mix(in srgb,var(--y,#FFE58A) 25%,var(--surface))}
+.dc .th{width:100%;height:96px;border-radius:10px;display:grid;place-items:center;overflow:hidden;background:var(--surface-2)}
+.dc .th img{width:100%;height:100%;object-fit:cover}
+.dc .th[class*="tone-"]{background:color-mix(in srgb,var(--tc) 28%,var(--surface));color:var(--ink)}
+.dc-b{min-width:0;padding-right:28px}.dc-n{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dc .s{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dc>.icon-btn{position:absolute;right:6px;bottom:8px}
+.dc.isdir .dc-n{font-weight:700}
+.mv-list{display:flex;flex-direction:column;gap:2px;max-height:50vh;overflow:auto;min-width:min(340px,80vw)}
+.mv-list .mi:disabled{opacity:.45}
+.icon-btn[aria-pressed="true"]{background:var(--surface-2);color:var(--ink)}
+@media(max-width:720px){.di.dr{grid-template-columns:40px minmax(0,1fr) 36px}.di.dr .by,.di.dr .when,.di.dr .sz{display:none}.di.dh{display:none}}
 .di .th[class*="tone-"]{background:color-mix(in srgb,var(--tc) 15%,var(--surface));color:var(--tc)}
 .dt.ev{border-top:3px solid var(--ec)}
 
@@ -1160,6 +1188,9 @@ const ICONS={
   bell:'<path d="M6 17v-6a6 6 0 0112 0v6l2 2H4z"/><path d="M10 21h4"/>',
   tree:'<path d="M12 21v-6"/><path d="M12 15c-4 0-6-2.5-6-5.5 0-1.4.6-2.6 1.6-3.4C8 4.6 9.8 3 12 3s4 1.6 4.4 3.1c1 .8 1.6 2 1.6 3.4 0 3-2 5.5-6 5.5z"/>',
   home:'<path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-6h4v6"/>',
+  folder:'<path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H10l2 2.5h7.5A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z"/>',
+  grid:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.4"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.4"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4"/>',
+  list:'<path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".8"/><circle cx="4" cy="12" r=".8"/><circle cx="4" cy="18" r=".8"/>',
   copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/>'
 };
 function icon(n,s){const sp=document.createElement('span');sp.className='ic';const z=s||16;
@@ -1325,7 +1356,7 @@ function subscribeSpace(){
 }
 function switchSpace(id){
   closeDocument(true);unsubscribeSpace();
-  S.active=id;S.tab='oversikt';S.openDoc=null;S.editing=null;S.q='';S.itemFilter='alle';
+  S.active=id;S.tab='oversikt';S.openDoc=null;S.editing=null;S.q='';S.itemFilter='alle';DD.dir='';
   S.data={members:{},events:{},tasks:{},items:{},books:{},chapters:{},goals:{},subgoals:{},messages:{},notifs:{},todos:{},activity:{}};S.loaded={};
   try{localStorage.setItem('samlag.last',id);}catch(_){}
   if(id!==PRIV)noteRecent(id);
@@ -1397,7 +1428,7 @@ function renderTabs(){
   const t=$('#tabs');
   const open=goalsArr().filter(x=>!x.done).length;
   const sd=skogStats().done;
-  const defs=[['oversikt','Oversikt','home','violet'],['dokument','Dokument','doc','blue',Object.keys(S.data.items).length],['kalender','Kalender','calendar','rose'],['mal','Mål','target','orange',open],['todo','To-do','check','teal',todosArr().filter(x=>x.status!=='done').length],['skog','Skog','tree','green',sd]];
+  const defs=[['oversikt','Oversikt','home','violet'],['dokument','Dokument','doc','blue',itemsArr().filter(i=>i.type!=='folder').length],['kalender','Kalender','calendar','rose'],['mal','Mål','target','orange',open],['todo','To-do','check','teal',todosArr().filter(x=>x.status!=='done').length],['skog','Skog','tree','green',sd]];
   if(S.active===PRIV)defs.splice(1,0,['prosjekt','Prosjekt','tree','blue',S.myList.length]);
   if(S.active!==PRIV)defs.push(['prat','Meldingar','chat','teal',unreadCount(S.active,'prat')]);
   defs.push(['innst','Innstillingar','gear','amber']);
@@ -1818,10 +1849,10 @@ const itemsArr=()=>Object.entries(S.data.items).map(([id,t])=>Object.assign({id}
 function openItem(it){
   if(it.type==='doc')openDocument(it.id);
 }
-function itemIcon(it){return it.type==='doc'?'doc':it.type==='link'?'link':'file';}
+function itemIcon(it){return it.type==='folder'?'folder':it.type==='doc'?'doc':it.type==='link'?'link':'file';}
 function hb(ic,tone){return h('span',{class:'hb tone-'+tone},icon(ic,16));}
 function itemTone(it){
-  if(it.type==='doc')return 'blue';if(it.type==='link')return 'teal';
+  if(it.type==='folder')return 'orange';if(it.type==='doc')return 'blue';if(it.type==='link')return 'teal';
   const m=it.mime||'';if(m==='application/pdf')return 'rose';if(/^video\//.test(m))return 'violet';
   if(m==='text/csv'||m==='application/json')return 'green';return 'amber';}
 function itemHref(it){if(it.type==='link')return safeUrl(it.url);if(it.type==='file'&&/^[0-9a-f]{32}$/.test(it.assetId||''))return '/_blob/'+it.assetId;return null;}
@@ -1833,6 +1864,7 @@ function itemTitleEl(it,cls){
   return h('span',{class:cls||''},it.title||'Utan namn');
 }
 function itemSub(it){
+  if(it.type==='folder')return 'Mappe';
   if(it.type==='doc')return 'Dokument';
   if(it.type==='link'){const h2=itemHref(it);return (h2?serviceOf(h2):'Ugyldig lenke');}
   const mime=(it.mime||'').split('/')[1]||'fil';return mime.toUpperCase().replace('+XML','')+(it.size?' · '+fmtSize(it.size):'');
@@ -2161,59 +2193,174 @@ function viewMal(){
 }
 
 /* ---------- dokument ---------- */
+const DD={dir:'',view:'list',sort:'mod'};
+try{const v=localStorage.getItem('troupers.dview');if(v==='grid'||v==='list')DD.view=v;const so=localStorage.getItem('troupers.dsort');if(['mod','name','nameD','old'].indexOf(so)>=0)DD.sort=so;}catch(_){}
+function dirKids(id){const out=[];const walk=pid=>itemsArr().filter(i=>(i.parent||'')===pid).forEach(i=>{out.push(i);if(i.type==='folder')walk(i.id);});walk(id);return out;}
+function dirPath(id){const p=[];let g=0;while(id&&g++<30){const f=S.data.items[id];if(!f||f.type!=='folder')break;p.unshift(Object.assign({id},f));id=f.parent||'';}return p;}
+function pathLabel(it){const p=dirPath(it.parent||'');return p.length?p.map(x=>x.title||'Mappe').join(' › '):'Dokument';}
+function ctxMenu(anchor,entries){
+  closeMenu();
+  menuEl=h('div',{class:'menu',role:'menu'},entries.filter(Boolean).map(e=>e==='-'?h('hr'):h('button',{class:'mi '+(e[3]||''),type:'button',role:'menuitem',onclick:()=>{closeMenu();e[2]();}},icon(e[1],16),e[0])));
+  $('#layer').append(menuEl);
+  const r=anchor.getBoundingClientRect();
+  menuEl.style.left=Math.max(12,Math.min(r.left,innerWidth-222))+'px';
+  let top=r.bottom+4;const mh=menuEl.offsetHeight;if(top+mh>innerHeight-12)top=Math.max(12,r.top-mh-4);
+  menuEl.style.top=top+'px';
+  menuOut=e=>{if(menuEl&&!menuEl.contains(e.target))closeMenu();};
+  setTimeout(()=>{if(menuEl)document.addEventListener('pointerdown',menuOut);},0);
+}
+function openDItem(it){
+  if(it.type==='folder'){DD.dir=it.id;S.q='';S.itemFilter='alle';renderView();return;}
+  if(it.type==='doc'){openItem(it);return;}
+  if(it.type==='link'){const href=itemHref(it);if(href)openEmbed(it);return;}
+  if(it.chunks){openFile(it);return;}
+  const href=itemHref(it);if(href)window.open(href,'_blank','noopener');
+}
+function renameItem(it){
+  const inp=h('input',{class:'inp',maxlength:'140',value:it.title||'',required:true});
+  openModal('Gi nytt namn',h('form',{class:'form',onsubmit:async e=>{e.preventDefault();const v=inp.value.trim();if(!v)return;
+      try{await col('items').doc(it.id).update({title:v,updatedAt:Date.now(),updatedBy:S.uid});closeModal();}catch(er){fail(er);}}},
+    inp,h('div',{class:'row end'},h('button',{class:'btn',type:'button',onclick:closeModal},'Avbryt'),h('button',{class:'btn primary',type:'submit'},'Lagre'))));
+  setTimeout(()=>{inp.focus();const d=(it.title||'').lastIndexOf('.');inp.setSelectionRange(0,(it.type==='file'&&d>0)?d:inp.value.length);},30);
+}
+function newFolder(){
+  const inp=h('input',{class:'inp',maxlength:'100',placeholder:'Mappenamn',required:true,value:'Ny mappe'});
+  openModal('Ny mappe',h('form',{class:'form',onsubmit:async e=>{e.preventDefault();const v=inp.value.trim();if(!v)return;const t=Date.now();
+      try{await col('items').add({type:'folder',title:v,parent:DD.dir||'',createdBy:S.uid,createdAt:t,updatedAt:t,updatedBy:S.uid});closeModal();}catch(er){fail(er);}}},
+    inp,h('div',{class:'row end'},h('button',{class:'btn',type:'button',onclick:closeModal},'Avbryt'),h('button',{class:'btn primary',type:'submit'},'Lag mappe'))));
+  setTimeout(()=>inp.select(),30);
+}
+async function moveItem(it,pid){
+  pid=pid||'';if((it.parent||'')===pid||it.id===pid)return;
+  if(it.type==='folder'&&dirKids(it.id).some(k=>k.id===pid)){toast('Du kan ikkje flytte ei mappe inn i seg sjølv.','bad');return;}
+  try{await col('items').doc(it.id).update({parent:pid});toast('Flytta «'+(it.title||'Utan namn')+'».');}catch(e){fail(e);}
+}
+function openMove(it){
+  const bad=new Set([it.id].concat(it.type==='folder'?dirKids(it.id).map(k=>k.id):[]));
+  const rows=[];const walk=(pid,d)=>itemsArr().filter(i=>i.type==='folder'&&(i.parent||'')===pid&&!bad.has(i.id)).sort((a,b)=>(a.title||'').localeCompare(b.title||'','nb')).forEach(f=>{rows.push([f,d]);walk(f.id,d+1);});
+  walk('',1);
+  const btn=(label,pid,d)=>h('button',{class:'mi',type:'button',disabled:(it.parent||'')===pid,style:'padding-left:'+(8+d*16)+'px',onclick:async()=>{closeModal();await moveItem(it,pid);}},icon('folder',16),label);
+  openModal('Flytt «'+(it.title||'Utan namn')+'»',h('div',{class:'form'},h('div',{class:'mv-list'},btn('Dokument (øvst)','',0),rows.map(([f,d])=>btn(f.title||'Mappe',f.id,d))),
+    h('div',{class:'row end'},h('button',{class:'btn',type:'button',onclick:closeModal},'Avbryt'))));
+}
+async function dlItem(it){
+  try{const blob=await fileBlob(it);const u=URL.createObjectURL(blob);const a=h('a',{href:u,download:it.title||'fil'});document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);}
+  catch(e){fail(e);}
+}
+function itemMenu(it,anchor){
+  const p=perm();const href=itemHref(it);
+  ctxMenu(anchor,[
+    ['Opne','ext',()=>openDItem(it)],
+    (it.type==='link'&&href)?['Opne i ny fane','ext',()=>window.open(href,'_blank','noopener')]:null,
+    (it.type==='file'&&it.chunks)?['Last ned','upload',()=>dlItem(it)]:null,
+    p.write?'-':null,
+    p.write?['Gi nytt namn','edit',()=>renameItem(it)]:null,
+    p.write?['Flytt til …','folder',()=>openMove(it)]:null,
+    canDel(it)?'-':null,
+    canDel(it)?['Slett','trash',()=>deleteItem(it),'bad']:null]);
+}
 function viewDokument(){
   const p=perm();
   const q=S.q.trim().toLowerCase();
+  if(DD.dir&&!(S.data.items[DD.dir]&&S.data.items[DD.dir].type==='folder')&&S.loaded&&Object.keys(S.data.items).length)DD.dir='';
+  const flat=!!q||S.itemFilter!=='alle';
   let items=itemsArr();
-  if(S.itemFilter!=='alle')items=items.filter(i=>i.type===S.itemFilter);
-  if(q)items=items.filter(i=>((i.title||'')+' '+(i.url||'')+' '+(i.note||'')).toLowerCase().indexOf(q)>=0);
-  items.sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
+  if(flat){
+    items=items.filter(i=>i.type!=='folder'||S.itemFilter==='alle');
+    if(S.itemFilter!=='alle')items=items.filter(i=>i.type===S.itemFilter);
+    if(q)items=items.filter(i=>((i.title||'')+' '+(i.url||'')+' '+(i.note||'')).toLowerCase().indexOf(q)>=0);
+  }else items=items.filter(i=>(i.parent||'')===DD.dir);
+  const cmp={mod:(a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0),old:(a,b)=>(a.updatedAt||a.createdAt||0)-(b.updatedAt||b.createdAt||0),
+    name:(a,b)=>(a.title||'').localeCompare(b.title||'','nb',{numeric:true}),nameD:(a,b)=>(b.title||'').localeCompare(a.title||'','nb',{numeric:true})}[DD.sort];
+  items.sort((a,b)=>((b.type==='folder')-(a.type==='folder'))||cmp(a,b));
   const fin=h('input',{type:'file',id:'file-in',multiple:true,hidden:true});
   fin.addEventListener('change',()=>{handleFiles(Array.from(fin.files));fin.value='';});
+  const upload=()=>{if(S.assets||S.fsFiles)fin.click();else toast('Filopplasting er ikkje tilgjengeleg for deg. Legg ved ei lenke i staden.','bad');};
+  const newBtn=h('button',{class:'btn primary',type:'button',onclick:e=>ctxMenu(e.currentTarget,[
+    ['Ny mappe','folder',newFolder],'-',['Nytt dokument','doc',createDoc],['Lenke','link',openAddLink],['Last opp filer','upload',upload]])},icon('plus'),'Ny');
+  const setView=v=>{DD.view=v;try{localStorage.setItem('troupers.dview',v);}catch(_){}renderView();};
+  const sortSel=h('select',{class:'inp dsort','aria-label':'Sorter',onchange:e=>{DD.sort=e.target.value;try{localStorage.setItem('troupers.dsort',DD.sort);}catch(_){}renderView();}},
+    [['mod','Sist endra'],['old','Eldst først'],['name','Namn A–Å'],['nameD','Namn Å–A']].map(([k,l])=>h('option',{value:k,selected:DD.sort===k},l)));
   const bar=h('div',{class:'dl-bar'},
-    h('input',{class:'inp',id:'doc-q','data-keep':'',type:'search',placeholder:'Søk i dokument',value:S.q,'aria-label':'Søk',oninput:e=>{S.q=e.target.value;renderView();}}),
+    p.write?newBtn:null,
+    h('input',{class:'inp',id:'doc-q','data-keep':'',type:'search',placeholder:'Søk i alle mapper',value:S.q,'aria-label':'Søk',oninput:e=>{S.q=e.target.value;renderView();}}),
     h('div',{class:'chips-f'},[['alle','Alle'],['doc','Dokument'],['link','Lenker'],['file','Filer']].map(([k,l])=>
       h('button',{class:'fc',type:'button','aria-pressed':String(S.itemFilter===k),onclick:()=>{S.itemFilter=k;renderView();}},l))),
-    h('div',{class:'row',style:'margin-left:auto'},
-      p.write?h('button',{class:'btn primary',type:'button',onclick:createDoc},icon('plus'),'Nytt dokument'):null,
-      p.write?h('button',{class:'btn',type:'button',onclick:openAddLink},icon('link'),'Lenke'):null,
-      p.write?h('button',{class:'btn',type:'button',onclick:()=>{if(S.assets||S.fsFiles)fin.click();else toast('Filopplasting er ikkje tilgjengeleg for deg. Legg ved ei lenke i staden.','bad');}},icon('upload'),'Last opp'):null,fin));
-  const list=h('div',{class:'dl'});
+    h('div',{class:'row',style:'margin-left:auto;gap:6px'},sortSel,
+      h('button',{class:'icon-btn',type:'button',title:'Liste','aria-label':'Liste','aria-pressed':String(DD.view==='list'),onclick:()=>setView('list')},icon('list',18)),
+      h('button',{class:'icon-btn',type:'button',title:'Rutenett','aria-label':'Rutenett','aria-pressed':String(DD.view==='grid'),onclick:()=>setView('grid')},icon('grid',18)),fin));
+  // brødsmulestig (også slepp-mål)
+  const dropOn=(el,pid)=>{
+    el.addEventListener('dragover',e=>{const ty=Array.from((e.dataTransfer&&e.dataTransfer.types)||[]);if(p.write&&(ty.indexOf('text/x-tr')>=0||ty.indexOf('Files')>=0)){e.preventDefault();e.stopPropagation();el.classList.add('dropt');}});
+    el.addEventListener('dragleave',()=>el.classList.remove('dropt'));
+    el.addEventListener('drop',e=>{el.classList.remove('dropt');if(!p.write)return;e.preventDefault();e.stopPropagation();
+      const id=e.dataTransfer.getData('text/x-tr');
+      if(id&&S.data.items[id]){moveItem(Object.assign({id},S.data.items[id]),pid);return;}
+      if(e.dataTransfer.files&&e.dataTransfer.files.length)handleFiles(Array.from(e.dataTransfer.files),pid);});
+  };
+  const path=dirPath(DD.dir);
+  const crumbs=h('nav',{class:'crumbs','aria-label':'Mappesti'});
+  const cb=(label,pid,last)=>{const b=h('button',{class:'crumb',type:'button',disabled:last,onclick:()=>{DD.dir=pid;renderView();}},label);if(!last)dropOn(b,pid);return b;};
+  if(flat){crumbs.append(h('span',{class:'crumb now'},(q?'Søkjer i alle mapper':'Filter: '+({doc:'Dokument',link:'Lenker',file:'Filer'}[S.itemFilter]))),
+    h('button',{class:'crumb',type:'button',onclick:()=>{S.q='';S.itemFilter='alle';renderView();}},'Vis mapper'));}
+  else{crumbs.append(cb(icon('home',14),'',!path.length));crumbs.firstChild.append(' Dokument');
+    path.forEach((f,i)=>{crumbs.append(h('span',{class:'sep'},'›'),cb(f.title||'Mappe',f.id,i===path.length-1));});}
+  const mkMore=it=>h('button',{class:'icon-btn',type:'button','aria-label':'Meir',onclick:e=>{e.stopPropagation();itemMenu(it,e.currentTarget);}},icon('more',18));
+  const decorate=(el,it)=>{
+    if(p.write){el.draggable=true;el.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/x-tr',it.id);e.dataTransfer.effectAllowed='move';el.classList.add('dragging');});el.addEventListener('dragend',()=>el.classList.remove('dragging'));}
+    if(it.type==='folder')dropOn(el,it.id);
+    el.addEventListener('contextmenu',e=>{e.preventDefault();itemMenu(it,{getBoundingClientRect:()=>({left:e.clientX,right:e.clientX,top:e.clientY,bottom:e.clientY})});});
+    return el;};
+  const nameBtn=it=>h('button',{class:'link-t',type:'button',onclick:()=>openDItem(it)},it.title||'Utan namn');
+  const kidCount=it=>itemsArr().filter(i=>(i.parent||'')===it.id).length;
+  const subOf=it=>it.type==='folder'?(kidCount(it)+' element'):(itemSub(it)+(it.note?' · '+it.note:''));
+  const thumb=(it,big)=>{const href=itemHref(it);const isImg=it.type==='file'&&/^image\//.test(it.mime||'')&&href;
+    return h('div',{class:'th tone-'+itemTone(it)},isImg?h('img',{src:href,alt:'',loading:'lazy'}):icon(itemIcon(it),big?34:20));};
+  const list=h('div',{class:'dl'+(DD.view==='grid'?' dgrid':'')});
   if(!items.length){
+    const any=Object.keys(S.data.items).length;
     list.append(h('div',{class:'empty-big',style:'border:0'},
-      h('strong',null,Object.keys(S.data.items).length?'Ingen treff':'Her er det tomt'),
-      h('p',null,Object.keys(S.data.items).length?'Prøv eit anna søk eller filter.':'Lag eit dokument som fleire kan skrive i samtidig, legg inn ei lenke til ei teneste, eller slepp ei fil her.'),
-      (!Object.keys(S.data.items).length&&p.write)?h('button',{class:'btn primary',type:'button',onclick:createDoc},icon('plus'),'Nytt dokument'):null));
-  }
-  items.forEach(it=>{
-    const href=itemHref(it);const isImg=it.type==='file'&&/^image\//.test(it.mime||'')&&href;
-    list.append(h('div',{class:'di'},
-      h('div',{class:'th tone-'+itemTone(it)},isImg?h('img',{src:href,alt:'',loading:'lazy'}):icon(itemIcon(it),20)),
-      h('div',{class:'nm'},itemTitleEl(it),h('div',{class:'s'},itemSub(it)+(it.note?' · '+it.note:''))),
+      h('strong',null,flat?'Ingen treff':DD.dir?'Mappa er tom':any?'Her er det tomt':'Her er det tomt'),
+      h('p',null,flat?'Prøv eit anna søk eller filter.':'Lag eit dokument som fleire kan skrive i samtidig, ei mappe, ei lenke til ei teneste – eller slepp ei fil her.'),
+      (!flat&&p.write)?h('div',{class:'row'},h('button',{class:'btn primary',type:'button',onclick:createDoc},icon('plus'),'Nytt dokument'),h('button',{class:'btn',type:'button',onclick:newFolder},icon('folder'),'Ny mappe')):null));
+  }else if(DD.view==='list'){
+    const arrow=k=>DD.sort===k?' ▲':DD.sort===k+'D'?' ▼':'';
+    const sortBy=k=>{DD.sort=(DD.sort===k)?k+'D':k;if(k==='mod'&&DD.sort==='modD')DD.sort='old';try{localStorage.setItem('troupers.dsort',DD.sort);}catch(_){}renderView();};
+    list.append(h('div',{class:'di dr dh'},h('span'),
+      h('button',{class:'dhb',type:'button',onclick:()=>sortBy('name')},'Namn'+(DD.sort==='name'?' ▲':DD.sort==='nameD'?' ▼':'')),
+      h('span',{class:'by'},'Endra av'),
+      h('button',{class:'dhb',type:'button',onclick:()=>sortBy('mod')},'Sist endra'+(DD.sort==='mod'?' ▼':DD.sort==='old'?' ▲':'')),
+      h('span',{class:'sz'},'Storleik'),h('span')));
+    items.forEach(it=>list.append(decorate(h('div',{class:'di dr'+(it.type==='folder'?' isdir':'')},
+      thumb(it),
+      h('div',{class:'nm'},nameBtn(it),h('div',{class:'s'},flat?pathLabel(it)+' · '+subOf(it):subOf(it))),
       h('div',{class:'by'},whoChip(it.updatedBy||it.createdBy,true)),
       h('div',{class:'when'},relTime(it.updatedAt||it.createdAt)),
-      h('div',{class:'row',style:'gap:2px;flex-wrap:nowrap'},
-        it.type==='link'&&href?h('button',{class:'btn ghost sm',type:'button',title:'Vis lenka her i nettsida (t.d. Canva eller Claude-presentasjon)',onclick:()=>openEmbed(it)},'Vis her'):null,
-        (it.type!=='doc'&&href)?h('a',{class:'icon-btn',href,target:'_blank',rel:'noopener noreferrer','aria-label':'Opne i ny fane'},icon('ext')):null,
-        canDel(it)?h('button',{class:'icon-btn bad',type:'button','aria-label':'Slett',onclick:()=>deleteItem(it)},icon('trash')):null)));
-  });
+      h('div',{class:'sz'},it.type==='file'&&it.size?fmtSize(it.size):''),
+      mkMore(it)),it)));
+  }else{
+    items.forEach(it=>list.append(decorate(h('div',{class:'dc'+(it.type==='folder'?' isdir':''),onclick:e=>{if(!e.target.closest('.icon-btn'))openDItem(it);}},
+      thumb(it,true),
+      h('div',{class:'dc-b'},h('div',{class:'dc-n'},it.title||'Utan namn'),h('div',{class:'s'},flat?pathLabel(it):subOf(it))),
+      mkMore(it)),it)));
+  }
   list.addEventListener('dragover',e=>{if(p.write&&e.dataTransfer&&Array.from(e.dataTransfer.types||[]).indexOf('Files')>=0){e.preventDefault();list.classList.add('drag');}});
-  list.addEventListener('dragleave',()=>list.classList.remove('drag'));
+  list.addEventListener('dragleave',e=>{if(e.target===list)list.classList.remove('drag');});
   list.addEventListener('drop',e=>{list.classList.remove('drag');if(!p.write)return;e.preventDefault();
     if(!S.assets&&!S.fsFiles){toast('Filopplasting er ikkje tilgjengeleg for deg. Legg ved ei lenke i staden.','bad');return;}
     handleFiles(Array.from(e.dataTransfer.files||[]));});
-  return h('div',{style:'display:flex;flex-direction:column;gap:14px'},bar,
+  return h('div',{style:'display:flex;flex-direction:column;gap:14px'},bar,crumbs,
     (p.write&&!S.assets&&!S.fsFiles)?h('p',{class:'note'},'Filopplasting er ikkje slått på for deg. Du kan likevel legge inn lenker til filer i Google Disk, Dropbox og liknande.'):null,
     list,
-    p.write?h('p',{class:'note'},''+(S.fsFiles?'Last opp kva fil du vil, opp til 5 MB. Trykk på fila for å opne ho her i Troupers.':'Filer kan vere bilete, PDF, video, tekst, CSV, Markdown eller JSON, opp til 20 MB. Word- og Excel-filer kan du leggje inn som lenke frå ei teneste.')+''):null);
+    p.write?h('p',{class:'note'},'Dra filer inn for å laste opp, og dra ei fil eller mappe over ei mappe (eller stien over) for å flytte ho. Høgreklikk eller trykk ⋮ for fleire val. '+(S.fsFiles?'Filer kan vere opp til 5 MB.':'Filer kan vere opp til 20 MB.')):null);
 }
 async function createDoc(){
   if(!perm().write)return;
   const ref=col('items').doc();const t=Date.now();
   try{
-    await ref.set({type:'doc',title:'Utan namn',createdBy:S.uid,createdAt:t,updatedAt:t,updatedBy:S.uid});
+    await ref.set({type:'doc',title:'Utan namn',parent:DD.dir||'',createdBy:S.uid,createdAt:t,updatedAt:t,updatedBy:S.uid});
     await blocksCol(ref.id).doc().set({text:'',kind:'p',done:false,order:1,by:S.uid,at:t});
-    S.data.items=Object.assign({},S.data.items,{[ref.id]:{type:'doc',title:'Utan namn',createdBy:S.uid,createdAt:t,updatedAt:t,updatedBy:S.uid}});
+    S.data.items=Object.assign({},S.data.items,{[ref.id]:{type:'doc',title:'Utan namn',parent:DD.dir||'',createdBy:S.uid,createdAt:t,updatedAt:t,updatedBy:S.uid}});
     logAct('dokument','laga eit nytt dokument','dokument');
     await openDocument(ref.id);
     setTimeout(()=>{const ti=$('#ed-title');if(ti){ti.focus();ti.select();}},60);
@@ -2227,14 +2374,15 @@ function openAddLink(){
   const f=h('form',{class:'form',onsubmit:async e=>{e.preventDefault();
     const href=normUrl(url.value);if(!href){toast('Det der ser ikkje ut som ei gyldig nettadresse.','bad');return;}
     const t=Date.now();
-    try{await col('items').add({type:'link',title:title.value.trim()||(serviceOf(href)+' · '+new URL(href).hostname.replace(/^www\./,'')),url:href,note:note.value.trim(),createdBy:S.uid,createdAt:t,updatedAt:t,updatedBy:S.uid});logAct('dokument','la til lenka «'+(title.value.trim()||href)+'»','dokument');closeModal();toast('Lenka er lagd til.');}
+    try{await col('items').add({type:'link',parent:DD.dir||'',title:title.value.trim()||(serviceOf(href)+' · '+new URL(href).hostname.replace(/^www\./,'')),url:href,note:note.value.trim(),createdBy:S.uid,createdAt:t,updatedAt:t,updatedBy:S.uid});logAct('dokument','la til lenka «'+(title.value.trim()||href)+'»','dokument');closeModal();toast('Lenka er lagd til.');}
     catch(er){fail(er);}}},
     h('label',{class:'lbl'},'Adresse',url),h('label',{class:'lbl'},'Namn',title),h('label',{class:'lbl'},'Merknad',note),hint,
     h('div',{class:'row end'},h('button',{class:'btn',type:'button',onclick:closeModal},'Avbryt'),h('button',{class:'btn primary',type:'submit'},'Legg til')));
   openModal('Legg til lenke',f);
 }
 const TEXT_TYPES={csv:'text/csv',md:'text/markdown',markdown:'text/markdown',json:'application/json',txt:'text/plain'};
-async function handleFiles(files){
+async function handleFiles(files,parent){
+  if(parent===undefined)parent=DD.dir;
   if(!files.length||!perm().write)return;
   if(!S.assets&&!S.fsFiles){toast('Filopplasting er ikkje tilgjengeleg for deg.','bad');return;}
   for(const f of files){
@@ -2242,9 +2390,9 @@ async function handleFiles(files){
     const opt=TEXT_TYPES[ext]?{type:TEXT_TYPES[ext]}:(!f.type?{}:undefined);
     toast('Lastar opp '+f.name+' …');
     try{
-      if(S.fsFiles){await fsUpload(f);toast(f.name+' er lagd til.');continue;}
+      if(S.fsFiles){await fsUpload(f,parent);toast(f.name+' er lagd til.');continue;}
       const r=await S.assets.upload(f,opt);const t=Date.now();
-      await col('items').add({type:'file',title:f.name,assetId:r.id,size:r.sizeBytes,mime:r.contentType,createdBy:S.uid,createdAt:t,updatedAt:t,updatedBy:S.uid});
+      await col('items').add({type:'file',parent:parent||'',title:f.name,assetId:r.id,size:r.sizeBytes,mime:r.contentType,createdBy:S.uid,createdAt:t,updatedAt:t,updatedBy:S.uid});
       toast(f.name+' er lagd til.');
     }catch(e){
       const c=e&&e.code;
@@ -2262,13 +2410,13 @@ async function handleFiles(files){
 const FS_MAX=5*1024*1024,FS_CHUNK=600*1024;
 function b64FromBytes(u8){let s='';const k=0x8000;for(let i=0;i<u8.length;i+=k)s+=String.fromCharCode.apply(null,u8.subarray(i,i+k));return btoa(s);}
 function bytesFromB64(b){const s=atob(b);const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u;}
-async function fsUpload(f){
+async function fsUpload(f,parent){
   if(f.size>FS_MAX){const e=new Error('for stor');e.code='fs_too_large';throw e;}
   const buf=new Uint8Array(await f.arrayBuffer());const n=Math.max(1,Math.ceil(buf.length/FS_CHUNK));
   const ref=col('items').doc();
   for(let i=0;i<n;i++)await ref.collection('chunks').doc(String(i)).set({d:b64FromBytes(buf.subarray(i*FS_CHUNK,(i+1)*FS_CHUNK))});
   const t=Date.now();
-  await ref.set({type:'file',title:f.name,chunks:n,size:f.size,mime:f.type||guessMime(f.name),createdBy:S.uid,createdAt:t,updatedAt:t,updatedBy:S.uid});
+  await ref.set({type:'file',parent:parent||'',title:f.name,chunks:n,size:f.size,mime:f.type||guessMime(f.name),createdBy:S.uid,createdAt:t,updatedAt:t,updatedBy:S.uid});
   logAct('dokument','lasta opp fila «'+f.name+'»','dokument');
 }
 function guessMime(name){const e=(name.split('.').pop()||'').toLowerCase();
@@ -2375,14 +2523,21 @@ async function openFile(it){
     else{v.stage.append(h('p',{class:'muted',style:'padding:40px;text-align:center'},'Denne filtypen kan ikkje visast her. Last han ned for å opne han.'));setup(false);}
   }catch(e){v.stage.replaceChildren(h('p',{class:'muted',style:'padding:40px;text-align:center'},'Klarte ikkje opne fila: '+((e&&e.message)||e)));}
 }
+async function purgeItem(it){
+  if(E.active&&E.id===it.id)closeDocument(true);
+  if(it.type==='doc'){const bc=blocksCol(it.id);const bs=await bc.get();for(const d of bs.docs)await bc.doc(d.id).delete();}
+  if(it.type==='file'&&it.assetId&&S.assets){try{await S.assets.delete(it.assetId);}catch(_){}}
+  if(it.type==='file'&&it.chunks){for(let i=0;i<it.chunks;i++){try{await col('items').doc(it.id).collection('chunks').doc(String(i)).delete();}catch(_){}}}
+  await col('items').doc(it.id).delete();
+}
 async function deleteItem(it){
-  if(!(await confirmBox('Slette «'+(it.title||'Utan namn')+'»?',it.type==='doc'?'Heile dokumentet blir sletta for alle. Dette kan ikkje angrast.':'Dette kan ikkje angrast.','Slett')))return;
+  const kids=it.type==='folder'?dirKids(it.id):[];
+  const msg=it.type==='folder'?(kids.length?'Mappa og alle '+kids.length+' element i ho blir sletta for alle. Dette kan ikkje angrast.':'Mappa blir sletta.'):it.type==='doc'?'Heile dokumentet blir sletta for alle. Dette kan ikkje angrast.':'Dette kan ikkje angrast.';
+  if(!(await confirmBox('Slette «'+(it.title||'Utan namn')+'»?',msg,'Slett')))return;
   try{
-    if(E.active&&E.id===it.id)closeDocument(true);
-    if(it.type==='doc'){const bc=blocksCol(it.id);const bs=await bc.get();for(const d of bs.docs)await bc.doc(d.id).delete();}
-    if(it.type==='file'&&it.assetId&&S.assets){try{await S.assets.delete(it.assetId);}catch(_){}}
-    if(it.type==='file'&&it.chunks){for(let i=0;i<it.chunks;i++){try{await col('items').doc(it.id).collection('chunks').doc(String(i)).delete();}catch(_){}}}
-    await col('items').doc(it.id).delete();
+    for(const d of kids)await purgeItem(d);
+    await purgeItem(it);
+    if(it.type==='folder'&&(DD.dir===it.id||kids.some(k=>k.id===DD.dir)))DD.dir=it.parent||'';
     renderView();
   }catch(e){fail(e);}
 }
@@ -3023,7 +3178,7 @@ function refLabel(r){return ({dokument:'Dokument',fil:'Fil',lenke:'Lenke',hendin
 function refTargets(type){
   if(type==='hending')return eventsArr().filter(e=>!e._pid).map(e=>({id:e.id,title:e.title+' ('+fmtShort(e.date)+')'}));
   if(type==='mal')return goalsArr().map(g=>({id:g.id,title:g.title}));
-  return itemsArr().filter(i=>type==='dokument'?i.type==='doc':i.type!=='doc').map(i=>({id:i.id,title:i.title||'Utan namn'}));
+  return itemsArr().filter(i=>i.type!=='folder').filter(i=>type==='dokument'?i.type==='doc':i.type!=='doc').map(i=>({id:i.id,title:i.title||'Utan namn'}));
 }
 function openRef(r){
   if(r.type==='hending'){const e=S.data.events[r.id];if(e){S.cal.sel=e.date;S.cal.view='veke';}setTab('kalender');}
