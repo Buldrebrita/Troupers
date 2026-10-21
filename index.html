@@ -2730,7 +2730,6 @@ function forestSvg(st){
       else hd='<path d="M-4.5 -3Q-5 -10 0 -8Q5 -10 4.5 -3Z" fill="'+c+'" class="o" style="stroke-width:1"/><path d="M0 -8v5" stroke="'+dk+'" stroke-width="1" fill="none" opacity=".6"/>';
       fl+='<g transform="translate('+x.toFixed(0)+' '+y.toFixed(0)+') scale('+z.toFixed(2)+')"><path d="M0 0Q-1 4 0 8" class="o2"/><path d="M0 6q-5-1-6-4q4 0 6 4z" fill="#8ED08F" class="o" style="stroke-width:.9"/>'+hd+'</g>';}
     parts.push(fl);}
-  parts.push(critForest());
   // tre og tomme plantestader, bak til framme
   const sorted=lay.slots.slice().sort((a,b)=>a.y-b.y);let newIdx=0;const doneKeys=chEff();
   sorted.forEach(sl=>{
@@ -2747,6 +2746,7 @@ function forestSvg(st){
     if(sk.sel===sl.key)inner+='<ellipse cx="0" cy="2" rx="30" ry="8" class="selr"/>';
     parts.push('<g class="slot'+(done?' done':'')+'" data-bid="'+esc(sl.bid)+'" data-n="'+sl.n+'" tabindex="0" role="button" aria-label="'+label+'" transform="translate('+sl.x.toFixed(1)+' '+sl.y.toFixed(1)+') scale('+(sl.s*(done?sl.fl:1)).toFixed(3)+' '+sl.s.toFixed(3)+') rotate('+(done?sl.tilt:0).toFixed(1)+')">'+inner+'</g>');
   });
+  parts.push(critForest());
   lay.signs.forEach(sg=>{
     const cnt=st.per[sg.id]||0;const pc=sg.n?Math.round(cnt/sg.n*100):0;const txt=cnt+' av '+sg.n+' · '+pc+' %';
     const w=Math.max(120,String(sg.label).length*15+30,txt.length*9+24);
