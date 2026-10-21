@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signed() { return request.auth != null; }
+
+    // Privat område
+    match /data/users/{uid}/{doc=**} {
+      allow read, write: if signed() && request.auth.uid == uid;
+    }
+    // Namn
+    match /people/{uid} {
+      allow read: if signed();
+      allow write: if signed() && request.auth.uid == uid;
+    }
+
+    match /projects/{pid} {
+      function mref() { return /databases/$(db)/documents/projects/$(pid)/members/$(request.auth.uid); }
+      function mem() { return signed() && exists(mref()); }
+      function role() { return get(mref()).data.role; }
+      function canWrite() { return mem() && role() in ['eigar','redaktor','medlem']; }
+      function owner() { return mem() && role() == 'eigar'; }
+
+      // Ein kan hente prosjektet med koden (treng for å bli med), men ikkje liste alle
+      allow get: if signed();
+      allow create: if signed() && request.resource.data.createdBy == request.auth.uid;
+      allow update, delete: if owner();
+
+      match /members/{uid} {
+        allow read: if mem();
+        // bli med sjølv som medlem, eller opprett deg som eigar av eige prosjekt
+        allow create: if signed() && request.auth.uid == uid && (
+          request.resource.data.role == 'medlem' ||
+          (request.resource.data.role == 'eigar' &&
+           get(/databases/$(db)/documents/projects/$(pid)).data.createdBy == request.auth.uid));
+        allow update: if owner();
+        allow delete: if owner() || (signed() && request.auth.uid == uid);
+      }
+      match /notifs/{n} {
+        allow read, update, delete: if mem();
+        allow create: if canWrite();
+      }
+      match /{coll}/{doc=**} {
+        allow read: if mem();
+        allow write: if canWrite();
+      }
+    }
+  }
+}

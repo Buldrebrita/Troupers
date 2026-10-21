@@ -1287,7 +1287,7 @@ async function createProject(name,desc,color){
 function openJoin(){
   const code=h('input',{class:'inp mono',id:'jn-code',required:true,maxlength:'12',placeholder:'T.d. K7M2QX9A',autocomplete:'off',style:'letter-spacing:.12em;text-transform:uppercase'});
   const f=h('form',{class:'form',onsubmit:async e=>{e.preventDefault();if(await joinProject(code.value))closeModal();}},
-    h('p',{class:'muted'},'Be eigaren av prosjektet om koden. Du finn han under fana Folk.'),
+    h('p',{class:'muted'},'Be eigaren av prosjektet om koden. Du finn han i Innstillingar i prosjektet.'),
     h('label',{class:'lbl'},'Prosjektkode',code),
     h('div',{class:'row end'},h('button',{class:'btn',type:'button',onclick:closeModal},'Avbryt'),h('button',{class:'btn primary',type:'submit'},'Bli med')));
   openModal('Bli med i prosjekt',f);
@@ -1304,7 +1304,7 @@ async function joinProject(raw){
     if(!ex.exists)await mref.set({role:'medlem',joinedAt:Date.now()});
     await priv().collection('projects').doc(code).set({joinedAt:Date.now()});
     switchSpace(code);return true;
-  }catch(e){fail(e);return false;}
+  }catch(e){if(e&&e.code==='permission-denied')toast('Fekk ikkje løyve til å bli med. Reglane i Firebase må oppdaterast.','bad');else fail(e);console.error('join',e);return false;}
 }
 function openEditProject(){
   const m=meta();
