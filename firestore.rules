@@ -41,7 +41,7 @@ service cloud.firestore {
       }
       match /{coll}/{doc=**} {
         allow read: if mem();
-        allow write: if canWrite();
+        allow write: if canWrite() && coll != 'members' && coll != 'notifs';
       }
     }
   }
