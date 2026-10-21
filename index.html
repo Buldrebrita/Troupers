@@ -805,6 +805,47 @@ input[type=checkbox]:focus-visible{outline:3px solid var(--accent);outline-offse
 .top-r{gap:8px}.theme-btn{font-size:18px;width:36px;height:36px;border:2px solid var(--edge);border-radius:50%;background:var(--surface)}
 .msg{max-width:min(760px,100%);padding:12px 16px;cursor:default;font-size:18px;line-height:1.4}
 .msg .mt.big{font-size:26px}.msg .mimg{max-width:100%;max-height:420px}
+.who .av{box-shadow:0 0 0 2.5px var(--pc,transparent)}
+.pcols{display:flex;gap:8px;flex-wrap:wrap}.pcol{width:28px;height:28px;border-radius:50%;border:2px solid var(--edge)}.pcol.on{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--edge)}
+.chip.task.pc{background:color-mix(in srgb,var(--ec) 30%,var(--surface));border-left:5px solid var(--ec);border-style:solid dashed solid solid}
+.chip.task.pc .cd{border-color:var(--ec)}
+.ag-c.task.pc{background:color-mix(in srgb,var(--ec) 18%,var(--surface))}
+.docview{max-height:68vh;overflow:auto;background:#fff;color:#222;padding:18px 22px;border-radius:10px;border:2px solid var(--edge);font:400 16px/1.5 var(--f-body)}
+.docview img{max-width:100%}.docview table{border-collapse:collapse}.docview td,.docview th{border:1px solid #bbb;padding:3px 8px}
+.docview .slide{border:2px solid #ccc;border-radius:8px;padding:10px 14px;margin-bottom:10px}.docview .slide small{color:#888}
+.forest .cloud.c3{animation-duration:110s;animation-direction:alternate-reverse}
+.forest .wings{transform-box:fill-box;transform-origin:center;animation:flap .35s ease-in-out infinite alternate}
+@keyframes flap{to{transform:scaleX(.3)}}
+.forest .sun .rays{transform-box:fill-box;transform-origin:center}
+.forest .sun.full .rays{animation:spin 14s linear infinite}
+.forest .sun.full .halo{animation:glow 2.6s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+.forest .sun.full .halo.h2{animation-delay:-1.3s}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes glow{from{opacity:.12;transform:scale(.92)}to{opacity:.42;transform:scale(1.08)}}
+@media (prefers-reduced-motion:reduce){.forest .wings,.forest .sun .rays,.forest .sun .halo{animation:none!important}}
+.ov-forest .forest-wrap{margin:0;border:0;box-shadow:none;border-radius:var(--wob)}
+.card.set{padding:0;border-radius:var(--wob-s)}
+.set-h{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;padding:8px 14px;color:var(--ink);min-height:46px;font:inherit}
+.set-h.static{cursor:default;flex-wrap:wrap}
+.set-h b{font:400 20px var(--f-display);white-space:nowrap}
+.set-h .ic-badge,.set-h .hb{flex:none;transform:scale(.8)}
+.set-s,.set-sum{color:var(--muted);font-size:15px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.set-sum em{font-style:normal}.set-sum .dot{width:10px;height:10px;border-radius:50%;flex:none}
+.set-sum .who span:last-child{display:none}.set-sum .who{margin-right:-6px}.set-sum .av{width:22px;height:22px}
+.set-h .chev{margin-left:auto;color:var(--muted);transition:transform .15s;display:inline-flex}.set.open .set-h .chev{transform:rotate(90deg)}
+.set-h .inp{width:auto;padding:4px 8px}
+.set-b{padding:4px 16px 14px;border-top:1.5px dashed var(--line)}
+.set-b .form{margin-top:10px;gap:8px}.mems .mem{padding:6px 0}
+.td{display:flex;gap:8px;align-items:flex-start;border:2px solid var(--edge);border-left:6px solid var(--pc,var(--edge));border-radius:var(--wob-s);background:var(--surface);padding:8px 10px;cursor:grab}
+.td.drag{opacity:.4}.td.is-done .tl{text-decoration:line-through;color:var(--muted)}
+.td .t{flex:1;min-width:0}
+.pr{width:10px;height:10px;border-radius:50%;display:inline-block;border:1.5px solid var(--edge)}.pr-high{background:var(--rose)}.pr-mid{background:var(--y)}.pr-low{background:var(--gr)}
+.td-list{display:flex;flex-direction:column;gap:8px;max-width:760px}.td-done summary{cursor:pointer;color:var(--muted);margin:6px 0}
+.kb{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(240px,1fr);gap:12px;overflow-x:auto;align-items:start;padding-bottom:8px}
+.kb-c{border:2px dashed var(--edge);border-radius:var(--wob);background:color-mix(in srgb,var(--surface-2) 60%,transparent);padding:8px;min-height:120px}
+.kb-c.over{background:color-mix(in srgb,var(--y) 40%,var(--surface))}
+.kb-c h4{display:flex;align-items:center;gap:8px;font:400 20px var(--f-display);margin:2px 4px 8px}.kb-c h4 .n{margin-left:auto;font:400 14px var(--f-body);color:var(--muted)}
+.kb-l{display:flex;flex-direction:column;gap:8px}.kb-e{color:var(--muted);text-align:center;margin:10px 0}
 </style>
 
 <div id="root"><div class="boot"><h1>Troupers</h1><p class="muted">Lastar …</p></div></div>
@@ -867,7 +908,8 @@ if(!(window.claude&&window.claude.use)){(function(){
       const authReady=new Promise(r=>{resolveAuth=r;});
       const finish=u=>{if(done)return;done=true;cur=u;try{ov&&ov.remove();}catch(_){}
         const nm=u.displayName||(u.email||'Eg').split('@')[0];
-        fs.doc('people/'+u.uid).set({name:nm},{merge:true}).catch(()=>{});resolveAuth(u);};
+        fs.doc('people/'+u.uid).set({name:nm},{merge:true}).catch(()=>{});
+        fs.doc('people/'+u.uid).get().then(d=>{const c=d.exists&&d.data().color;if(c){try{localStorage.setItem('troupers.mycolor',c);}catch(_){}}}).catch(()=>{});resolveAuth(u);};
       const msg=c=>({'auth/invalid-email':'E-postadressa ser ikkje riktig ut.','auth/missing-password':'Skriv inn passord.','auth/weak-password':'Passordet må ha minst 6 teikn.','auth/email-already-in-use':'Det finst alt ein brukar med denne e-posten.','auth/invalid-credential':'Feil e-post eller passord.','auth/wrong-password':'Feil e-post eller passord.','auth/user-not-found':'Feil e-post eller passord.','auth/too-many-requests':'For mange forsøk. Vent litt og prøv att.','auth/operation-not-allowed':'E-post/passord er ikkje slått på i Firebase enno.','auth/network-request-failed':'Ingen nettverkskontakt.'}[c]||'Noko gjekk gale ('+c+').');
       const showLogin=()=>{
         if(ov)return;let reg=false;
@@ -907,15 +949,16 @@ if(!(window.claude&&window.claude.use)){(function(){
       api.user={id:async()=>(await authReady).uid,me:async()=>{await authReady;return me2();},can:async()=>true,
         profiles:async ids=>{await authReady;const o={};
           await Promise.all(ids.map(async i=>{if(i===cur.uid){o[i]=me2();return;}
-            if(!pc[i]){try{const d=await fs.doc('people/'+i).get();pc[i]=d.exists?d.data().name:'Ukjend';}catch(_){pc[i]='Ukjend';}}
-            o[i]={id:i,name:pc[i],avatarUrl:av(pc[i]),isMe:false};}));return o;}};
+            if(!pc[i]){try{const d=await fs.doc('people/'+i).get();pc[i]=d.exists?{n:d.data().name,c:d.data().color||''}:{n:'Ukjend',c:''};}catch(_){pc[i]={n:'Ukjend',c:''};}}
+            o[i]={id:i,name:pc[i].n,color:pc[i].c,avatarUrl:av(pc[i].n),isMe:false};}));return o;}};
       window.__logout=()=>auth.signOut().then(()=>location.reload());
       window.__profile={
         async rename(n){await cur.updateProfile({displayName:n});await fs.doc('people/'+cur.uid).set({name:n},{merge:true});},
+        async setColor(c){await fs.doc('people/'+cur.uid).set({color:c},{merge:true});},
         async del(){try{await fs.doc('people/'+cur.uid).delete();}catch(_){}await cur.delete();}};
     }
   }catch(e){console.error('Firebase feilte, brukar lokal lagring',e);}
-  window.__profile={async rename(n){name=n;try{localStorage.setItem(NK,n);}catch(_){}me.name=n;me.avatarUrl=av(n);},
+  window.__profile={async setColor(c){},async rename(n){name=n;try{localStorage.setItem(NK,n);}catch(_){}me.name=n;me.avatarUrl=av(n);},
     async del(){try{localStorage.removeItem(KEY);localStorage.removeItem(NK);localStorage.removeItem(UK);}catch(_){}}};
   window.claude={use:async n=>api[n]||null,local:true};
 })();}
@@ -1027,7 +1070,7 @@ const now0=new Date();
 const S={db:null,user:null,room:null,assets:null,uid:null,me:null,canData:true,
   metas:{},myList:[],myLoaded:false,active:PRIV,tab:'oversikt',
   cal:{sel:ymd(now0),view:(W.innerWidth<700?'dag':'veke'),hide:{ev:false,task:false},scroll:null,lastColor:null},
-  data:{members:{},events:{},tasks:{},items:{},books:{},chapters:{},goals:{},subgoals:{},messages:{},notifs:{}},loaded:{},openDoc:null,
+  data:{members:{},events:{},tasks:{},items:{},books:{},chapters:{},goals:{},subgoals:{},messages:{},notifs:{},todos:{},activity:{}},loaded:{},openDoc:null,
   taskFilter:'opne',itemFilter:'alle',q:'',editing:null,modal:null,want:null};
 const E={active:false,id:null,unsub:null,rows:new Map(),blocks:new Map(),order:[],pendingFocus:null,pendingCaret:0,
   view:null,list:null,peersEl:null,titleEl:null,metaEl:null,dirty:new Set(),inflight:new Set(),queued:new Set(),timers:new Map(),
@@ -1051,7 +1094,15 @@ function ready(){const k=S.loaded;return k.events&&k.tasks&&k.items&&(S.active==
 const NAMES={};
 async function loadNames(ids){
   const need=ids.filter(i=>i&&!NAMES[i]);if(!need.length||!S.user)return;
-  try{const ps=await S.user.profiles(need);let ch=false;for(const i of need)if(ps[i]){NAMES[i]=ps[i].name||'Ukjend';ch=true;}if(ch)scheduleRender();}catch(_){}
+  try{const ps=await S.user.profiles(need);let ch=false;for(const i of need)if(ps[i]){NAMES[i]=ps[i].name||'Ukjend';if(ps[i].color)COLORS[i]=ps[i].color;ch=true;}if(ch)scheduleRender();}catch(_){}
+}
+const PCOLORS=['#3B6FD4','#12877F','#3E8E41','#C98A0B','#D2622A','#C23C5E','#7A56C2','#5E6E78','#B5479B','#2E9CC2'];
+const COLORS={};
+function personColor(u){
+  if(!u)return '#5E6E78';
+  if(u===S.uid){let c='';try{c=localStorage.getItem('troupers.mycolor')||'';}catch(_){}if(PCOLORS.indexOf(c)>=0)return c;}
+  if(COLORS[u]&&PCOLORS.indexOf(COLORS[u])>=0)return COLORS[u];
+  let hh=0;for(const ch of String(u))hh=(hh*31+ch.charCodeAt(0))>>>0;return PCOLORS[hh%PCOLORS.length];
 }
 const nameOf=u=>u===S.uid?((S.me&&S.me.name)||'Du'):(NAMES[u]||'…');
 S.px={events:{},notifs:{}};const pxSubs={};const pxLoadedAt=Date.now();
@@ -1097,13 +1148,13 @@ async function hydrate(root){
   const els=Array.from(root.querySelectorAll('[data-uid]'));if(!els.length)return;
   const ids=Array.from(new Set(els.map(e=>e.dataset.uid).filter(Boolean)));if(!ids.length)return;
   let ps;try{ps=await S.user.profiles(ids);}catch(_){return;}
-  for(const el of els){const p=ps[el.dataset.uid];if(!p)continue;
+  for(const el of els){const p=ps[el.dataset.uid];if(!p)continue;if(p.color)COLORS[p.id||el.dataset.uid]=p.color;
     if(el.tagName==='IMG'){el.src=p.avatarUrl;el.alt='';}
     else el.textContent=(p.name||'Ukjend')+(p.isMe&&el.dataset.me?' (du)':'');}
 }
 function whoChip(uid,withMe){
   if(!uid)return h('span',{class:'muted'},'Ukjend');
-  return h('span',{class:'who'},h('img',{class:'av',dataset:{uid},alt:''}),h('span',{dataset:withMe?{uid,me:'1'}:{uid}},'…'));
+  return h('span',{class:'who',style:'--pc:'+personColor(uid)},h('img',{class:'av',dataset:{uid},alt:''}),h('span',{dataset:withMe?{uid,me:'1'}:{uid}},'…'));
 }
 
 /* ---------- dialog, meny ---------- */
@@ -1130,7 +1181,7 @@ function toggleNav(open){const s=$('#side'),c=$('#scrim');if(!s)return;s.classLi
 /* ---------- romval ---------- */
 function unsubscribeSpace(){spaceSubs.forEach(u=>{try{u();}catch(_){}});spaceSubs=[];}
 function subscribeSpace(){
-  const id=S.active;const names=['events','tasks','items','books','chapters','goals','subgoals','messages','notifs'];
+  const id=S.active;const names=['events','tasks','items','books','chapters','goals','subgoals','messages','notifs','todos','activity'];
   if(id===PRIV)S.loaded.members=true;else names.push('members');
   for(const n of names){
     const un=base(id).collection(n).onSnapshot(snap=>{
@@ -1143,7 +1194,7 @@ function subscribeSpace(){
 function switchSpace(id){
   closeDocument(true);unsubscribeSpace();
   S.active=id;S.tab='oversikt';S.openDoc=null;S.editing=null;S.q='';S.itemFilter='alle';
-  S.data={members:{},events:{},tasks:{},items:{},books:{},chapters:{},goals:{},subgoals:{},messages:{},notifs:{}};S.loaded={};
+  S.data={members:{},events:{},tasks:{},items:{},books:{},chapters:{},goals:{},subgoals:{},messages:{},notifs:{},todos:{},activity:{}};S.loaded={};
   try{localStorage.setItem('samlag.last',id);}catch(_){}
   if(id!==PRIV)noteRecent(id);
   subscribeSpace();renderAll();
@@ -1213,7 +1264,7 @@ function renderTabs(){
   const t=$('#tabs');
   const open=goalsArr().filter(x=>!x.done).length;
   const sd=skogStats().done;
-  const defs=[['oversikt','Oversikt','home','violet'],['dokument','Dokument','doc','blue',Object.keys(S.data.items).length],['kalender','Kalender','calendar','rose'],['mal','Mål','target','orange',open],['skog','Skog','tree','green',sd]];
+  const defs=[['oversikt','Oversikt','home','violet'],['dokument','Dokument','doc','blue',Object.keys(S.data.items).length],['kalender','Kalender','calendar','rose'],['mal','Mål','target','orange',open],['todo','To-do','check','teal',Object.values(S.data.todos||{}).filter(x=>x.status!=='done').length],['skog','Skog','tree','green',sd]];
   if(S.active===PRIV)defs.splice(1,0,['prosjekt','Prosjekt','tree','blue',S.myList.length]);
   if(S.active!==PRIV)defs.push(['prat','Meldingar','chat','teal',unreadCount(S.active,'prat')]);
   defs.push(['innst','Innstillingar','gear','amber']);
@@ -1252,6 +1303,7 @@ function buildView(){
   else if(S.tab==='kalender')el=viewKalender();
   else if(S.tab==='skog')el=viewSkog();
   else if(S.tab==='mal')el=viewMal();
+  else if(S.tab==='todo')el=viewTodo();
   else if(S.tab==='prosjekt'&&S.active===PRIV)el=h('div',{class:'ov-wrap'},projSection());
   else if(S.tab==='prat'&&S.active!==PRIV)el=viewPrat();
   else if(S.tab==='innst')el=viewInnst();
@@ -1331,7 +1383,7 @@ async function leaveProject(){
 }
 async function removeProject(pid){
   const b=S.db.doc('projects/'+pid);
-  for(const n of ['events','tasks','books','chapters','goals','subgoals','messages','notifs']){const s=await b.collection(n).get();for(const d of s.docs)await b.collection(n).doc(d.id).delete();}
+  for(const n of ['events','tasks','books','chapters','goals','subgoals','messages','notifs','todos','activity']){const s=await b.collection(n).get();for(const d of s.docs)await b.collection(n).doc(d.id).delete();}
   const its=await b.collection('items').get();
   for(const d of its.docs){
     const bc=b.collection('items').doc(d.id).collection('blocks');const bs=await bc.get();
@@ -1612,7 +1664,7 @@ function agCard(x){
     return h('button',{type:'button',class:'ag-c ev'+(dec?' declined':''),style:'--ec:'+evColor(x.color),onclick:()=>openEventModal(x)},
       h('span',{class:'tm'},evTimeText(x)),h('span',{class:'tt'},x.title),
       x._pn?h('span',{class:'pn'},x._pn):null,dec?h('span',{class:'pn'},'Avslått'):null);}
-  return h('button',{type:'button',class:'ag-c task'+(x.done?' done':''),onclick:()=>openGoalModal(x)},
+  return h('button',{type:'button',class:'ag-c task'+(x.done?' done':'')+(x.assignee?' pc':''),style:x.assignee?'--ec:'+personColor(x.assignee):null,onclick:()=>openGoalModal(x)},
     h('span',{class:'tm'},x._kind==='sub'?'Delmål':'Mål'),h('span',{class:'tt'},x.title),
     x.assignee?h('span',{class:'pn'},h('span',{dataset:{uid:x.assignee}},'…')):null);
 }
@@ -1707,17 +1759,93 @@ function viewOversikt(){
   let forest;
   const st=skogStats();
   if(st.books.length){
-    const pct=st.total?Math.round(st.done/st.total*100):0;
-    forest=h('section',{class:'card ov-card'},h('h3',null,hb('tree','green'),'Skogen',h('button',{class:'btn ghost sm',type:'button',onclick:()=>setTab('skog')},'Opne')),
-      skogScene(st),milestones(st.total?st.done/st.total:0),
-      h('div',{class:'row',style:'gap:12px;margin-top:10px;align-items:center'},h('b',{style:'font:400 28px var(--f-display)'},st.done+' av '+st.total),
-        h('div',{class:'bar grow'},h('i',{style:'width:'+pct+'%'})),h('span',{class:'muted'},pct+' %')));
+    forest=h('div',{class:'ov-forest'},skogScene(st),h('div',{class:'row end',style:'margin-top:6px'},h('button',{class:'btn ghost sm',type:'button',onclick:()=>setTab('skog')},icon('tree',14),'Opne skogen')));
   }else{
-    forest=h('section',{class:'card ov-card'},h('h3',null,hb('tree','green'),'Skogen'),
-      h('p',{class:'empty'},'Legg inn bøkene de les. For kvart kapittel de blir ferdige med, veks det eit tre.'),
+    forest=h('div',{class:'ov-forest'},h('p',{class:'empty'},'Legg inn bøkene de les. For kvart kapittel de blir ferdige med, veks det eit tre.'),
       p.manage?h('button',{class:'btn primary',type:'button',onclick:()=>setTab('skog')},icon('plus'),'Kom i gang med skogen'):null);
   }
   return h('div',{class:'ov-wrap'},nytSection(),calCard,forest);
+}
+
+/* ---------- to-do ---------- */
+const TD_ST=[['todo','Å gjere'],['doing','Held på'],['done','Ferdig']];
+const TD_PR=[['high','Høg'],['mid','Middels'],['low','Låg']];
+const TD_VIEWS=[['liste','Liste','list'],['kanban','Kanban','target'],['prio','Prioritet','bell'],['person','Per person','users']];
+const tdView=()=>{let v='kanban';try{v=localStorage.getItem('troupers.todoview')||'kanban';}catch(_){}return TD_VIEWS.some(x=>x[0]===v)?v:'kanban';};
+function todosArr(){return Object.entries(S.data.todos||{}).map(([id,x])=>Object.assign({status:'todo',prio:'mid'},x,{id})).sort((a,b)=>(a.order||a.createdAt||0)-(b.order||b.createdAt||0));}
+async function addTodo(inp,due,who){
+  const t=inp.value.trim();if(!t){inp.focus();return;}
+  try{const n=Date.now();await col('todos').add({title:t,status:'todo',prio:'mid',due:due||'',assignee:who||'',order:n,createdBy:S.uid,createdAt:n});
+    if(who&&who!==S.uid)sendNotif(S.active,who,'tildelt','«'+t+'» er tildelt deg','todo');
+    logAct('todo','la inn to-do «'+t+'»','todo');S.ui.tform=false;renderView();}catch(e){fail(e);}
+}
+async function tdSet(x,patch){try{await col('todos').doc(x.id).update(patch);}catch(e){fail(e);}}
+function openTodoModal(x){
+  const p=perm();
+  if(!p.write){openModal(x.title,h('div',{class:'form'},h('p',{class:'muted'},(x.due?'Frist '+fmtLong(x.due)+' · ':'')+(TD_ST.find(s=>s[0]===x.status)||[])[1]),h('div',{class:'row end'},h('button',{class:'btn',type:'button',onclick:closeModal},'Lukk'))));return;}
+  const title=h('input',{class:'ttl-in',required:true,maxlength:'140',value:x.title,'aria-label':'Tittel'});
+  const st=h('select',{class:'inp'},TD_ST.map(([k,l])=>h('option',{value:k},l)));st.value=x.status;
+  const pr=h('select',{class:'inp'},TD_PR.map(([k,l])=>h('option',{value:k},l)));pr.value=x.prio;
+  const due=h('input',{class:'inp',type:'date',value:x.due||''});
+  const who=S.active!==PRIV?memberSelect('td-who',x.assignee,true):null;
+  const f=h('form',{class:'form',onsubmit:async e=>{e.preventDefault();const v=title.value.trim();if(!v){title.focus();return;}
+    const nw=who?who.value:'';
+    await tdSet(x,{title:v,status:st.value,prio:pr.value,due:due.value||'',assignee:nw});
+    if(nw&&nw!==x.assignee&&nw!==S.uid)sendNotif(S.active,nw,'tildelt','«'+v+'» er tildelt deg','todo');
+    closeModal();renderView();}},
+    title,h('div',{class:'row',style:'gap:10px;flex-wrap:wrap'},h('label',{class:'lbl'},'Status',st),h('label',{class:'lbl'},'Prioritet',pr),h('label',{class:'lbl'},'Frist',due),who?h('label',{class:'lbl'},'Ansvarleg',who):null),
+    h('div',{class:'row'},canDel(x)?h('button',{class:'btn danger',type:'button',style:'margin-right:auto',onclick:async()=>{closeModal();try{await col('todos').doc(x.id).delete();}catch(er){fail(er);}}},icon('trash'),'Slett'):h('span',{style:'margin-right:auto'}),
+      h('button',{class:'btn',type:'button',onclick:closeModal},'Avbryt'),h('button',{class:'btn primary',type:'submit'},'Lagre')));
+  openModal('To-do',f);hydrate(S.modal);
+}
+function tdCard(x,p){
+  const done=x.status==='done';
+  const c=h('div',{class:'td'+(done?' is-done':''),draggable:p.write?'true':'false',dataset:{id:x.id},style:x.assignee?'--pc:'+personColor(x.assignee):null},
+    h('input',{type:'checkbox','aria-label':'Ferdig',checked:done,disabled:!p.write,onchange:e=>tdSet(x,{status:e.target.checked?'done':'todo'})}),
+    h('div',{class:'t'},h('button',{type:'button',class:'link-t ed',onclick:()=>openTodoModal(x)},h('span',{class:'tl'},x.title),icon('edit',14)),
+      h('div',{class:'s row',style:'gap:8px'},h('i',{class:'pr pr-'+x.prio,title:'Prioritet: '+(TD_PR.find(q=>q[0]===x.prio)||[])[1]}),dueBadge(x),x.assignee?whoChip(x.assignee,false):null)));
+  c.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',x.id);e.dataTransfer.effectAllowed='move';c.classList.add('drag');});
+  c.addEventListener('dragend',()=>c.classList.remove('drag'));
+  return c;
+}
+function tdColumns(view,list){
+  if(view==='kanban')return TD_ST.map(([k,l])=>({key:k,label:l,items:list.filter(x=>x.status===k),patch:{status:k}}));
+  if(view==='prio')return TD_PR.map(([k,l])=>({key:k,label:l,items:list.filter(x=>x.prio===k&&x.status!=='done'),patch:{prio:k}})).concat([{key:'_d',label:'Ferdig',items:list.filter(x=>x.status==='done'),patch:{status:'done'}}]);
+  const mem=Object.keys(S.data.members).sort((a,b)=>(a===S.uid?-1:b===S.uid?1:0));
+  return mem.map(u=>({key:u,label:'',uid:u,items:list.filter(x=>x.assignee===u&&x.status!=='done'),patch:{assignee:u}}))
+    .concat([{key:'',label:'Ingen ansvarleg',items:list.filter(x=>!x.assignee&&x.status!=='done'),patch:{assignee:''}}]);
+}
+function viewTodo(){
+  const p=perm();
+  if(!S.loaded.todos)return h('p',{class:'muted'},'Lastar …');
+  const view=tdView();const list=todosArr();
+  const seg=h('div',{class:'seg',role:'group','aria-label':'Visning'},TD_VIEWS.filter(v=>v[0]!=='person'||S.active!==PRIV).map(([k,l])=>
+    h('button',{type:'button','aria-pressed':String(view===k),onclick:()=>{try{localStorage.setItem('troupers.todoview',k);}catch(_){}renderView();}},l)));
+  const head=h('div',{class:'mal-h'},h('h2',null,hb('check','teal'),'To-do'),seg);
+  const addBox=!p.write?null:S.ui.tform
+    ?h('div',{class:'mk-box'},formRow('tf','Kva skal gjerast?',addTodo,()=>{S.ui.tform=false;renderView();}))
+    :h('div',null,h('button',{class:'btn',type:'button',onclick:()=>{S.ui.tform=true;renderView();setTimeout(()=>{const e=document.getElementById('tf-t');if(e)e.focus();},30);}},icon('plus'),'To-do'));
+  let body;
+  if(view==='liste'){
+    const open=list.filter(x=>x.status!=='done').sort((a,b)=>(a.due||'9').localeCompare(b.due||'9')||(a.createdAt||0)-(b.createdAt||0));
+    const done=list.filter(x=>x.status==='done');
+    body=h('div',{class:'td-list'},open.length?open.map(x=>tdCard(x,p)):h('p',{class:'empty'},'Ingenting å gjere. Fint!'),
+      done.length?h('details',{class:'td-done'},h('summary',null,'Ferdige ('+done.length+')'),done.map(x=>tdCard(x,p))):null);
+  }else{
+    const cols=tdColumns(view,list);
+    body=h('div',{class:'kb'},cols.map(c=>{
+      const col_=h('section',{class:'kb-c'},h('h4',null,c.uid?whoChip(c.uid,true):c.label,h('span',{class:'n'},String(c.items.length))),
+        h('div',{class:'kb-l'},c.items.length?c.items.map(x=>tdCard(x,p)):h('p',{class:'kb-e'},'Tomt')));
+      if(p.write){col_.addEventListener('dragover',e=>{e.preventDefault();col_.classList.add('over');});
+        col_.addEventListener('dragleave',()=>col_.classList.remove('over'));
+        col_.addEventListener('drop',e=>{e.preventDefault();col_.classList.remove('over');const id=e.dataTransfer.getData('text/plain');const x=list.find(y=>y.id===id);if(x)tdSet(x,c.patch);});}
+      return col_;}));
+  }
+  const el=h('div',{class:'ov-wrap'},head,addBox,body);hydrate(el);return el;
+}
+function logAct(type,text,tab){
+  if(S.active===PRIV)return;
+  try{col('activity').add({type,text:String(text).slice(0,160),by:S.uid,at:Date.now(),tab:tab||'oversikt'}).catch(()=>{});}catch(_){}
 }
 
 /* ---------- mål (slått saman med oppgåver) ---------- */
@@ -1740,7 +1868,7 @@ function dueBadge(x){
   return h('span',{class:'due'+(over?' over':'')},fmtShort(x.due));
 }
 async function setGoalDone(g,done){
-  try{await gcol(g).doc(g.id).update({done:!!done,doneAt:done?Date.now():0,doneBy:done?S.uid:''});}catch(e){fail(e);}
+  try{await gcol(g).doc(g.id).update({done:!!done,doneAt:done?Date.now():0,doneBy:done?S.uid:''});if(done)logAct('mal','fullførte målet «'+g.title+'»','mal');}catch(e){fail(e);}
 }
 async function toggleSub(id,done){
   try{const x=S.data.subgoals[id]||{};
@@ -1806,11 +1934,11 @@ function formRow(idp,ph,onSave,onCancel){
 }
 async function addGoal(inp,due,who){
   const t=inp.value.trim();if(!t){inp.focus();return;}
-  try{const n=Date.now();await col('goals').add({title:t,due:due||'',assignee:who||'',done:false,order:n,createdBy:S.uid,createdAt:n});assignNotify('',who,t);S.ui.gform=false;renderView();}catch(e){fail(e);}
+  try{const n=Date.now();await col('goals').add({title:t,due:due||'',assignee:who||'',done:false,order:n,createdBy:S.uid,createdAt:n});assignNotify('',who,t);logAct('mal','la inn målet «'+t+'»','mal');S.ui.gform=false;renderView();}catch(e){fail(e);}
 }
 async function addSub(gid,inp,due,who){
   const t=inp.value.trim();if(!t){inp.focus();return;}
-  try{const n=Date.now();await col('subgoals').add({goal:gid,title:t,due:due||'',assignee:who||'',done:false,order:n,createdBy:S.uid,createdAt:n});assignNotify('',who,t);S.ui.sform=null;renderView();}catch(e){fail(e);}
+  try{const n=Date.now();await col('subgoals').add({goal:gid,title:t,due:due||'',assignee:who||'',done:false,order:n,createdBy:S.uid,createdAt:n});assignNotify('',who,t);logAct('mal','la inn delmålet «'+t+'»','mal');S.ui.sform=null;renderView();}catch(e){fail(e);}
 }
 function metaBits(x){return [dueBadge(x),x.assignee?whoChip(x.assignee,false):null];}
 function viewMal(){
@@ -1906,6 +2034,7 @@ async function createDoc(){
     await ref.set({type:'doc',title:'Utan namn',createdBy:S.uid,createdAt:t,updatedAt:t,updatedBy:S.uid});
     await blocksCol(ref.id).doc().set({text:'',kind:'p',done:false,order:1,by:S.uid,at:t});
     S.data.items=Object.assign({},S.data.items,{[ref.id]:{type:'doc',title:'Utan namn',createdBy:S.uid,createdAt:t,updatedAt:t,updatedBy:S.uid}});
+    logAct('dokument','laga eit nytt dokument','dokument');
     await openDocument(ref.id);
     setTimeout(()=>{const ti=$('#ed-title');if(ti){ti.focus();ti.select();}},60);
   }catch(e){fail(e);}
@@ -1918,7 +2047,7 @@ function openAddLink(){
   const f=h('form',{class:'form',onsubmit:async e=>{e.preventDefault();
     const href=normUrl(url.value);if(!href){toast('Det der ser ikkje ut som ei gyldig nettadresse.','bad');return;}
     const t=Date.now();
-    try{await col('items').add({type:'link',title:title.value.trim()||(serviceOf(href)+' · '+new URL(href).hostname.replace(/^www\./,'')),url:href,note:note.value.trim(),createdBy:S.uid,createdAt:t,updatedAt:t,updatedBy:S.uid});closeModal();toast('Lenka er lagd til.');}
+    try{await col('items').add({type:'link',title:title.value.trim()||(serviceOf(href)+' · '+new URL(href).hostname.replace(/^www\./,'')),url:href,note:note.value.trim(),createdBy:S.uid,createdAt:t,updatedAt:t,updatedBy:S.uid});logAct('dokument','la til lenka «'+(title.value.trim()||href)+'»','dokument');closeModal();toast('Lenka er lagd til.');}
     catch(er){fail(er);}}},
     h('label',{class:'lbl'},'Adresse',url),h('label',{class:'lbl'},'Namn',title),h('label',{class:'lbl'},'Merknad',note),hint,
     h('div',{class:'row end'},h('button',{class:'btn',type:'button',onclick:closeModal},'Avbryt'),h('button',{class:'btn primary',type:'submit'},'Legg til')));
@@ -1960,30 +2089,60 @@ async function fsUpload(f){
   for(let i=0;i<n;i++)await ref.collection('chunks').doc(String(i)).set({d:b64FromBytes(buf.subarray(i*FS_CHUNK,(i+1)*FS_CHUNK))});
   const t=Date.now();
   await ref.set({type:'file',title:f.name,chunks:n,size:f.size,mime:f.type||guessMime(f.name),createdBy:S.uid,createdAt:t,updatedAt:t,updatedBy:S.uid});
+  logAct('dokument','lasta opp fila «'+f.name+'»','dokument');
 }
 function guessMime(name){const e=(name.split('.').pop()||'').toLowerCase();
-  return ({pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',svg:'image/svg+xml',txt:'text/plain',md:'text/markdown',csv:'text/csv',json:'application/json',mp4:'video/mp4',mp3:'audio/mpeg',wav:'audio/wav'})[e]||'application/octet-stream';}
+  return ({pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',svg:'image/svg+xml',txt:'text/plain',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',md:'text/markdown',csv:'text/csv',json:'application/json',mp4:'video/mp4',mp3:'audio/mpeg',wav:'audio/wav'})[e]||'application/octet-stream';}
 async function fileBlob(it){
   const parts=[];
   for(let i=0;i<it.chunks;i++){const d=await col('items').doc(it.id).collection('chunks').doc(String(i)).get();
     if(!d.exists)throw new Error('Delar av fila manglar.');parts.push(bytesFromB64(d.data().d));}
   return new Blob(parts,{type:it.mime||'application/octet-stream'});
 }
+const LIBS={};
+function loadLib(url){if(LIBS[url])return LIBS[url];return LIBS[url]=new Promise((res,rej)=>{const sc=document.createElement('script');sc.src=url;sc.onload=res;sc.onerror=()=>rej(new Error('Klarte ikkje laste visaren (treng nettverk).'));document.head.append(sc);});}
+const extOf=n=>((n||'').split('.').pop()||'').toLowerCase();
+function escH(t){return String(t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
 async function openFile(it){
   const body=h('div',{class:'form'},h('p',{class:'muted'},'Lastar fila …'));
   openModal(it.title||'Fil',body);
   try{
-    const blob=await fileBlob(it);const url=URL.createObjectURL(blob);const m=it.mime||'';let view;
+    const blob=await fileBlob(it);const url=URL.createObjectURL(blob);let m=it.mime||'';const ex=extOf(it.title);
+    if(!m||m==='application/octet-stream')m=guessMime(it.title||'');
+    let view;
     if(/^image\//.test(m))view=h('img',{src:url,alt:it.title||'',style:'max-width:100%;max-height:70vh;display:block;margin:auto'});
     else if(m==='application/pdf')view=h('iframe',{src:url,title:it.title||'PDF',style:'width:100%;height:70vh;border:2px solid var(--edge);border-radius:10px;background:#fff'});
     else if(/^video\//.test(m))view=h('video',{src:url,controls:true,style:'max-width:100%;max-height:70vh'});
     else if(/^audio\//.test(m))view=h('audio',{src:url,controls:true});
-    else if(/^text\/|json/.test(m)){const txt=await blob.text();view=h('pre',{style:'white-space:pre-wrap;max-height:65vh;overflow:auto;background:var(--surface-2);padding:12px;border-radius:10px;margin:0'},txt.length>200000?txt.slice(0,200000)+'\n…':txt);}
+    else if(ex==='docx'){
+      await loadLib('https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js');
+      const r=await window.mammoth.convertToHtml({arrayBuffer:await blob.arrayBuffer()});
+      view=h('div',{class:'docview'});view.innerHTML=r.value||'<p>(Tomt dokument)</p>';
+      view.querySelectorAll('script,iframe,object,embed').forEach(x=>x.remove());view.querySelectorAll('*').forEach(x=>{[...x.attributes].forEach(a=>{if(/^on/i.test(a.name))x.removeAttribute(a.name);});});
+      view.querySelectorAll('a').forEach(a=>{a.target='_blank';a.rel='noopener';});
+    }
+    else if(ex==='xlsx'||ex==='xls'||ex==='ods'){
+      await loadLib('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+      const wb=window.XLSX.read(await blob.arrayBuffer(),{type:'array'});
+      view=h('div',{class:'docview'});
+      wb.SheetNames.slice(0,12).forEach(n=>{view.append(h('h4',null,n));const t=document.createElement('div');t.className='tbl';t.innerHTML=window.XLSX.utils.sheet_to_html(wb.Sheets[n],{header:'',footer:''}).replace(/<\/?(html|head|body|meta|title)[^>]*>/gi,'');t.querySelectorAll('script').forEach(x=>x.remove());view.append(t);});
+    }
+    else if(ex==='pptx'){
+      await loadLib('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+      const z=await window.JSZip.loadAsync(await blob.arrayBuffer());
+      const names=Object.keys(z.files).filter(n=>/^ppt\/slides\/slide\d+\.xml$/.test(n)).sort((a,b)=>parseInt(a.match(/\d+/)[0])-parseInt(b.match(/\d+/)[0]));
+      view=h('div',{class:'docview'});
+      for(let i=0;i<names.length;i++){const x=await z.file(names[i]).async('string');
+        const paras=x.split(/<\/a:p>/).map(p=>(p.match(/<a:t[^>]*>([^<]*)<\/a:t>/g)||[]).map(t=>t.replace(/<[^>]+>/g,'')).join('')).filter(Boolean);
+        const sl=h('section',{class:'slide'},h('small',null,'Lysbilete '+(i+1)));paras.forEach((p,j)=>sl.append(h(j?'p':'h3',null,p.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'"))));view.append(sl);}
+      if(!names.length)view.append(h('p',{class:'muted'},'Fann ingen lysbilete.'));
+    }
+    else if(/^text\/|json|xml/.test(m)||['txt','md','csv','json','log','html','css','js'].indexOf(ex)>=0){const txt=await blob.text();view=h('pre',{style:'white-space:pre-wrap;max-height:65vh;overflow:auto;background:var(--surface-2);padding:12px;border-radius:10px;margin:0'},txt.length>200000?txt.slice(0,200000)+'\n…':txt);}
     else view=h('p',{class:'muted'},'Denne filtypen kan ikkje visast her. Last han ned for å opne han.');
     body.replaceChildren(view,h('div',{class:'row end',style:'margin-top:12px'},
       h('a',{class:'btn',href:url,download:it.title||'fil'},icon('upload',16),'Last ned'),
       h('button',{class:'btn primary',type:'button',onclick:closeModal},'Lukk')));
-  }catch(e){body.replaceChildren(h('p',{class:'muted'},'Klarte ikkje opne fila: '+((e&&e.message)||e)));}
+  }catch(e){body.replaceChildren(h('p',{class:'muted'},'Klarte ikkje opne fila: '+((e&&e.message)||e)),h('div',{class:'row end'},h('button',{class:'btn primary',type:'button',onclick:closeModal},'Lukk')));}
 }
 async function deleteItem(it){
   if(!(await confirmBox('Slette «'+(it.title||'Utan namn')+'»?',it.type==='doc'?'Heile dokumentet blir sletta for alle. Dette kan ikkje angrast.':'Dette kan ikkje angrast.','Slett')))return;
@@ -2047,7 +2206,7 @@ function newEventDefaults(){
 function chipEl(x){
   if(x.k==='ev')return h('button',{type:'button',class:'chip ev'+(isDeclined(x,S.uid)?' declined':''),style:'--ec:'+evColor(x.color),title:x.title+(x._pn?' · '+x._pn:''),
     onclick:e=>{e.stopPropagation();openEventModal(x);}},h('i',{class:'cd'}),h('span',{class:'ct'},(x.time?x.time+' ':'')+x.title));
-  return h('button',{type:'button',class:'chip task'+(x.done?' done':''),title:x.title,
+  return h('button',{type:'button',class:'chip task'+(x.done?' done':'')+(x.assignee?' pc':''),style:x.assignee?'--ec:'+personColor(x.assignee):null,title:x.title+(x.assignee?' · '+nameOf(x.assignee):''),
     onclick:e=>{e.stopPropagation();openGoalModal(x);}},h('i',{class:'cd'}),h('span',{class:'ct'},x.title));
 }
 
@@ -2181,7 +2340,7 @@ function openEventModal(ev,def){
       endTime:(ad||!t2.value||toMin(t2.value)<=toMin(t1.value))?'':t2.value,color,note:note.value.trim()};
     if(mem.length)data.invited=Array.from(chosen);
     try{
-      if(isNew)await col('events').add(Object.assign({createdBy:S.uid,createdAt:Date.now()},data));
+      if(isNew){await col('events').add(Object.assign({createdBy:S.uid,createdAt:Date.now()},data));logAct('kalender','la inn hendinga «'+t+'» ('+fmtShort(data.date)+')','kalender');}
       else await col('events').doc(ev.id).update(data);
       if(mem.length){const before=new Set(isNew?[]:(inv0||mem));
         for(const u of data.invited)if(u!==S.uid&&!before.has(u))sendNotif(S.active,u,'hending','Ny hending: '+t+' ('+fmtShort(data.date)+(data.time?' kl. '+data.time:'')+')','kalender');}
@@ -2276,10 +2435,15 @@ function forestSvg(st){
   // stjerner, sol, måne
   let stars='';for(let i=0;i<22;i++){const x=R()*1000,y=10+R()*130,z=1+R()*1.8;stars+='<circle cx="'+x.toFixed(0)+'" cy="'+y.toFixed(0)+'" r="'+z.toFixed(1)+'" fill="#FFF6D0"/>';}
   parts.push('<g class="star">'+stars+'</g>');
-  parts.push('<g class="sun"><circle cx="860" cy="76" r="34" fill="#FFE58A" class="o"/><path d="M860 22v-12M860 130v12M806 76h-12M914 76h12M822 38l-8-8M898 114l8 8M898 38l8-8M822 114l-8 8" class="o2"/></g>');
+  {const full=f>=1;let rays='';const nr=full?14:8;
+    for(let i=0;i<nr;i++){const an=i/nr*Math.PI*2,r1=full?44:40,r2=(full?(i%2?62:76):54);rays+='M'+(860+Math.cos(an)*r1).toFixed(1)+' '+(76+Math.sin(an)*r1).toFixed(1)+'L'+(860+Math.cos(an)*r2).toFixed(1)+' '+(76+Math.sin(an)*r2).toFixed(1);}
+    parts.push('<g class="sun'+(full?' full':'')+'">'+(full?'<circle class="halo" cx="860" cy="76" r="88" fill="#FFE58A"/><circle class="halo h2" cx="860" cy="76" r="62" fill="#FFF3B0"/>':'')
+      +'<path class="o2 rays" d="'+rays+'" stroke-width="'+(full?3:2)+'"/><circle cx="860" cy="76" r="'+(full?36:32)+'" fill="'+(full?'#FFD84A':'#FFE58A')+'" class="o"/>'
+      +(full?'<path class="o2" d="M846 72q4-5 8 0M866 72q4-5 8 0M848 84q12 10 24 0" stroke-width="2"/>':'')+'</g>');}
   parts.push('<g class="moon"><circle cx="860" cy="76" r="30" fill="#FFF1B8" class="o"/><circle cx="850" cy="68" r="5" fill="#E9D68E"/><circle cx="870" cy="86" r="7" fill="#E9D68E"/><circle cx="866" cy="62" r="3" fill="#E9D68E"/></g>');
-  parts.push('<g class="cloud"><g transform="translate(120 70)"><ellipse cx="0" cy="0" rx="34" ry="14" class="o"/><ellipse cx="-20" cy="6" rx="22" ry="11" class="o"/><ellipse cx="22" cy="7" rx="24" ry="11" class="o"/></g></g>');
-  parts.push('<g class="cloud c2"><g transform="translate(520 48)"><ellipse cx="0" cy="0" rx="28" ry="12" class="o"/><ellipse cx="-17" cy="5" rx="18" ry="9" class="o"/><ellipse cx="18" cy="6" rx="20" ry="9" class="o"/></g></g>');
+  parts.push('<g class="cloud"><g transform="translate(380 74) scale(1.05)"><path d="M-45 12H45A14 14 0 0 0 48 -14A18 18 0 0 0 20 -22A24 24 0 0 0 -22 -26A20 20 0 0 0 -42 -6A14 14 0 0 0 -45 12Z" class="o"/><path d="M-26 -2q8-8 18-3M10 -10q8-4 15 2" class="o2" opacity=".45"/></g></g>');
+  parts.push('<g class="cloud c2"><g transform="translate(620 46) scale(.75)"><path d="M-45 12H45A14 14 0 0 0 48 -14A18 18 0 0 0 20 -22A24 24 0 0 0 -22 -26A20 20 0 0 0 -42 -6A14 14 0 0 0 -45 12Z" class="o"/><path d="M-26 -2q8-8 18-3" class="o2" opacity=".45"/></g></g>');
+  parts.push('<g class="cloud c3"><g transform="translate(250 118) scale(.5)"><path d="M-45 12H45A14 14 0 0 0 48 -14A18 18 0 0 0 20 -22A24 24 0 0 0 -22 -26A20 20 0 0 0 -42 -6A14 14 0 0 0 -45 12Z" class="o"/></g></g>');
   if(f>=1){const cl=['#FF9EB5','#FFC48A','#FFE58A','#A8E6B0','#9FD0F5','#C3B2F0'];
     parts.push('<g opacity=".9">'+cl.map((c,i)=>{const r0=345-i*11;return '<path d="M'+(500-r0)+' 385A'+r0+' '+r0+' 0 0 1 '+(500+r0)+' 385" fill="none" stroke="'+c+'" stroke-width="11"/>';}).join('')+'</g>');}
   // åsar
@@ -2317,8 +2481,10 @@ function forestSvg(st){
   if(f>=.5){parts.push('<g transform="translate(60 56)"><g class="bird"><path d="M0 0q6-7 12 0q6-7 12 0" class="o2"/></g></g><g transform="translate(40 92)"><g class="bird b2"><path d="M0 0q5-6 10 0q5-6 10 0" class="o2"/></g></g>');}
   if(f>=.75){
     let bf='',ff='';
-    for(let i=0;i<3;i++){const x=120+R()*760,y=190+R()*150;
-      bf+='<g transform="translate('+x.toFixed(0)+' '+y.toFixed(0)+')"><g class="bfly" style="animation-delay:'+(i*-2.3)+'s"><ellipse cx="-4" cy="0" rx="4.5" ry="3.5" fill="'+(i%2?'#FF9EB5':'#9FD0F5')+'" class="o" style="stroke-width:1.2"/><ellipse cx="4" cy="0" rx="4.5" ry="3.5" fill="'+(i%2?'#FF9EB5':'#9FD0F5')+'" class="o" style="stroke-width:1.2"/></g></g>';}
+    const bc=[['#FF9EB5','#FFD1DC'],['#9FD0F5','#CDE8FB'],['#FFC48A','#FFE2BF'],['#C3B2F0','#E1D8F8']];
+    for(let i=0;i<4;i++){const x=120+R()*760,y=190+R()*150;const c=bc[i%4];
+      const wing='<path d="M0 0C-3 -15 -21 -15 -17 -3C-15 1 -5 2 0 0Z" fill="'+c[0]+'" class="o" style="stroke-width:1.2"/><path d="M0 1C-3 9 -14 13 -11 5C-9 1 -3 0 0 1Z" fill="'+c[1]+'" class="o" style="stroke-width:1.2"/><circle cx="-11" cy="-6" r="2" fill="#fff" opacity=".8"/>';
+      bf+='<g transform="translate('+x.toFixed(0)+' '+y.toFixed(0)+')"><g class="bfly" style="animation-delay:'+(i*-2.3)+'s"><g class="wings" style="animation-delay:'+(-i*.13).toFixed(2)+'s">'+wing+'<g transform="scale(-1 1)">'+wing+'</g></g><ellipse cx="0" cy="1" rx="1.6" ry="6" fill="var(--edge)"/><path d="M0 -5q-2-6-5-7M0 -5q2-6 5-7" class="o2" stroke-width="1"/></g></g>';}
     for(let i=0;i<12;i++){const x=40+R()*920,y=170+R()*220;
       ff+='<g transform="translate('+x.toFixed(0)+' '+y.toFixed(0)+')"><circle class="ff" r="2.6" fill="#FFF3A6" style="animation-delay:'+(-R()*4).toFixed(1)+'s"/></g>';}
     parts.push('<g class="bf">'+bf+'</g><g class="fireflies">'+ff+'</g>');}
@@ -2489,42 +2655,50 @@ async function endProject(done){
   if(done){if(!(await confirmBox('Avslutte «'+m.name+'»?','Prosjektet blir ferdigstilt og lagra, men er ikkje aktivt lenger. Ingen kan leggje inn nytt. Du kan opne det att seinare.','Avslutt prosjektet')))return;}
   try{await base().update({status:done?'ferdig':'',endedAt:done?Date.now():0});toast(done?'Prosjektet er avslutta og lagra.':'Prosjektet er opna att.');}catch(e){fail(e);}
 }
+S.ui.setOpen=S.ui.setOpen||{};
+function setSec(key,ic,tone,title,summary,body){
+  const open=!!S.ui.setOpen[key];
+  const tg=()=>{S.ui.setOpen[key]=!open;renderView();};
+  return h('section',{class:'card set'+(open?' open':'')},
+    h('button',{type:'button',class:'set-h','aria-expanded':String(open),onclick:tg},hb(ic,tone),h('b',null,title),h('span',{class:'set-s'},summary||''),h('span',{class:'chev'},icon('chev-r',14))),
+    open?h('div',{class:'set-b'},typeof body==='function'?body():body):null);
+}
 function viewInnst(){
   const p=perm();const id=S.active;const isP=id!==PRIV;
   const secs=[];
   if(isP&&p.admin){
     const m=meta();
-    const name=h('input',{class:'inp',id:'ep-name',required:true,maxlength:'60',value:m.name});
-    const desc=h('textarea',{class:'inp',id:'ep-desc',maxlength:'240',rows:'3'});desc.value=m.desc||'';
-    const sw=swatches(m.color);
-    secs.push(h('section',{class:'card'},h('h3',null,hb('edit','blue'),'Rediger prosjektet'),
-      h('form',{class:'form',onsubmit:async e=>{e.preventDefault();const n=name.value.trim();if(!n)return;
+    const sum=h('span',{class:'set-sum'},h('i',{class:'dot',style:'background:'+safeColor(m.color)}),m.name,m.desc?h('em',null,' · '+m.desc):null);
+    secs.push(setSec('edit','edit','blue','Prosjektet',sum,()=>{
+      const name=h('input',{class:'inp',id:'ep-name',required:true,maxlength:'60',value:m.name});
+      const desc=h('textarea',{class:'inp',id:'ep-desc',maxlength:'240',rows:'2',placeholder:'Skriv eit kort notat …'});desc.value=m.desc||'';
+      const sw=swatches(m.color);
+      return h('form',{class:'form',onsubmit:async e=>{e.preventDefault();const n=name.value.trim();if(!n)return;
         const c=(sw.querySelector('input:checked')||{}).value||PALETTE[0];
-        try{await base().update({name:n,desc:desc.value.trim(),color:c});toast('Prosjektet er oppdatert.');}catch(er){fail(er);}}},
-        h('label',{class:'lbl'},'Namn',name),h('label',{class:'lbl'},'Notat om prosjektet',desc),h('div',{class:'lbl'},'Farge',sw),
-        h('div',{class:'row'},h('button',{class:'btn primary',type:'submit'},'Lagre endringar')))));
+        try{await base().update({name:n,desc:desc.value.trim(),color:c});S.ui.setOpen.edit=false;toast('Prosjektet er oppdatert.');renderView();}catch(er){fail(er);}}},
+        h('label',{class:'lbl'},'Namn',name),h('label',{class:'lbl'},'Notat',desc),h('div',{class:'lbl'},'Farge',sw),
+        h('div',{class:'row'},h('button',{class:'btn primary sm',type:'submit'},'Lagre')));}));
   }
   if(isP){
     const mem=Object.entries(S.data.members).sort((a,b)=>(a[0]===S.uid?-1:b[0]===S.uid?1:0)||(a[1].joinedAt||0)-(b[1].joinedAt||0));
     const owners=mem.filter(([,m])=>m.role==='eigar').length;
-    if(p.manage&&!ended())secs.push(h('section',{class:'card'},h('h3',null,hb('users','amber'),'Inviter folk'),
-      h('p',{class:'muted',style:'margin-bottom:12px'},'Del koden med dei du vil ha med. Dei skriv han inn under «Bli med i prosjekt» og blir medlemmer.'),
-      h('div',{class:'code-box'},h('span',{class:'pill code mono'},id),h('button',{class:'btn sm',type:'button',onclick:e=>copyText(id,e.currentTarget)},icon('copy'),'Kopier kode'))));
+    if(p.manage&&!ended())secs.push(h('section',{class:'card set'},h('div',{class:'set-h static'},hb('users','amber'),h('b',null,'Invitasjonskode'),
+      h('span',{class:'pill code mono'},id),h('button',{class:'btn sm ghost',type:'button',onclick:e=>copyText(id,e.currentTarget)},icon('copy',14),'Kopier'))));
     const rows=mem.map(([uid,m])=>{const isMe=uid===S.uid;let ctrl;
       if(p.admin){const sel=h('select',{class:'inp',style:'width:auto','aria-label':'Rolle',onchange:e=>changeRole(uid,e.target.value)},
         Object.keys(ROLES).map(k=>h('option',{value:k,selected:k===m.role},ROLES[k])));sel.value=m.role;ctrl=sel;}
       else ctrl=h('span',{class:'pill role-'+m.role},ROLES[m.role]||m.role);
       return h('div',{class:'mem'},whoChip(uid,true),ctrl,
         (p.admin&&!isMe)?h('button',{class:'icon-btn bad',type:'button','aria-label':'Fjern frå prosjektet',onclick:()=>removeMember(uid)},icon('x')):null);});
-    secs.push(h('section',{class:'card',style:'padding:0;overflow:hidden'},h('h3',{style:'padding:16px 16px 0'},hb('users','amber'),'Medlemmer og roller'),mem.length?rows:h('p',{class:'empty',style:'padding:16px'},'Ingen medlemmer.')));
-    secs.push(h('section',{class:'card'},h('h3',null,'Roller'),
-      h('div',{class:'roles'},Object.keys(ROLES).map(k=>h('div',null,h('b',null,ROLES[k]),ROLE_TXT[k]))),
-      h('p',{class:'note',style:'margin-top:14px'},'Roller styrer kva nettsida lèt deg gjere.')));
+    const msum=h('span',{class:'set-sum'},mem.slice(0,6).map(([uid])=>whoChip(uid,false)),mem.length>6?' +'+(mem.length-6):'');
+    secs.push(setSec('mem','users','amber','Medlemmer og roller',msum,()=>h('div',null,
+      mem.length?h('div',{class:'mems'},rows):h('p',{class:'empty'},'Ingen medlemmer.'),
+      h('div',{class:'roles',style:'margin-top:12px'},Object.keys(ROLES).map(k=>h('div',null,h('b',null,ROLES[k]),ROLE_TXT[k]))),
+      h('p',{class:'note',style:'margin-top:8px'},'Roller styrer kva nettsida lèt deg gjere.'))));
   }
   // språk
   const ls=h('select',{class:'inp',style:'width:auto','aria-label':'Språk',onchange:e=>setLang(e.target.value)},Object.keys(LANGS).map(k=>h('option',{value:k},LANGS[k])));ls.value=S.lang||'no';
-  secs.push(h('section',{class:'card'},h('h3',null,hb('home','violet'),'Språk'),h('div',{class:'row'},ls),
-    h('p',{class:'note',style:'margin-top:8px'},'Engelsk omset menyar, knappar og overskrifter. Det du skriv sjølv blir ikkje omsett.')));
+  secs.push(h('section',{class:'card set'},h('div',{class:'set-h static'},hb('home','violet'),h('b',null,'Språk'),h('span',{class:'set-s'},'Engelsk omset menyar og knappar'),ls)));
   // varsel
   const pr=nprefs();
   const types=Object.keys(NT).map(k=>h('label',{class:'row',style:'gap:8px'},
@@ -2534,8 +2708,9 @@ function viewInnst(){
     if(!window.Notification){toast('Nettlesaren støttar ikkje varsel.','bad');return;}
     const r=await Notification.requestPermission();setNpref('browser',r==='granted');toast(r==='granted'?'Nettlesarvarsel er på.':'Nettlesaren blokkerer varsel.',r==='granted'?undefined:'bad');renderView();}},
     pr.browser&&window.Notification&&Notification.permission==='granted'?'Nettlesarvarsel er på':'Slå på nettlesarvarsel');
-  secs.push(h('section',{class:'card'},h('h3',null,hb('bell','rose'),'Varsel'),h('div',{style:'display:flex;flex-direction:column;gap:8px'},types),
-    h('div',{style:'margin-top:12px'},bn),h('p',{class:'note',style:'margin-top:8px'},'Nettlesarvarsel kjem berre når sida er open i ein fane.')));
+  const nOn=Object.keys(NT).filter(k=>pr[k]!==false).length;
+  secs.push(setSec('varsel','bell','rose','Varsel',h('span',{class:'set-sum'},nOn+' av '+Object.keys(NT).length+' typar på'),()=>h('div',null,h('div',{style:'display:flex;flex-direction:column;gap:8px'},types),
+    h('div',{style:'margin-top:12px'},bn),h('p',{class:'note',style:'margin-top:8px'},'Nettlesarvarsel kjem berre når sida er open i ein fane.'))));
   // prosjekt
   if(isP){
     const dang=[];
@@ -2549,9 +2724,9 @@ function viewInnst(){
     if(p.admin)dang.push(h('p',{class:'note'},'Å slette prosjektet fjernar alt for godt. Ingenting blir lagra.'));
     const owners=Object.values(S.data.members).filter(m=>m.role==='eigar').length;
     if(p.role==='eigar'&&owners<2)dang.push(h('p',{class:'note'},'Du er einaste eigar. Gjer ein annan til eigar før du forlèt prosjektet.'));
-    secs.push(h('section',{class:'card'},h('h3',null,'Prosjektet'),h('div',{style:'display:flex;flex-direction:column;gap:10px;align-items:flex-start'},dang)));
+    secs.push(setSec('danger','gear','amber','Avslutt og forlat',h('span',{class:'set-sum'},ended()?'Avslutta':''),()=>h('div',{style:'display:flex;flex-direction:column;gap:10px;align-items:flex-start'},dang)));
   }
-  const el=h('div',{style:'display:flex;flex-direction:column;gap:16px;max-width:860px'},secs);hydrate(el);return el;
+  const el=h('div',{style:'display:flex;flex-direction:column;gap:16px;max-width:760px'},secs);hydrate(el);return el;
 }
 
 /* ---------- meldingar og varsel ---------- */
@@ -2707,10 +2882,17 @@ function nytSection(){
     h('button',{class:'icon-btn',type:'button','aria-label':'Merk som lese',onclick:()=>markRead(n)},icon('check',14)));
   const parts=[];
   if(imp.length)parts.push(h('section',{class:'card nyt-imp',role:'alert'},h('h3',null,megaIcon(),'Viktig'),h('div',{class:'rows'},imp.map(row))));
+  const acts=S.active===PRIV?[]:Object.values(S.data.activity||{}).filter(a=>a&&a.at&&Date.now()-a.at<14*864e5).sort((a,b)=>b.at-a.at).slice(0,8);
+  if(acts.length)loadNames(acts.map(a=>a.by));
+  const actRows=acts.length?h('div',{class:'rows act'},acts.map(a=>h('div',{class:'nyt-r'},
+    h('span',{class:'nt-tag tone-'+({mal:'orange',dokument:'blue',kalender:'rose',todo:'teal'}[a.type]||'violet')},{mal:'Mål',dokument:'Dokument',kalender:'Kalender',todo:'To-do'}[a.type]||'Nytt'),
+    h('button',{type:'button',class:'link-t nyt-t',onclick:()=>{S.tab=a.tab||'oversikt';renderMain();}},(a.by===S.uid?'Du':nameOf(a.by))+' '+a.text),
+    h('span',{class:'s muted'},nTime(a.at))))):null;
   parts.push(h('section',{class:'card'},h('h3',null,hb('chat','teal'),'Nytt',
       rest.length?h('button',{class:'btn ghost sm',type:'button',onclick:()=>markAllRead(rest)},'Merk alle som lese'):null),
-    rest.length?h('div',{class:'rows'},rest.slice(0,8).map(row)):h('p',{class:'empty'},'Ingenting nytt. Du er à jour.'),
-    rest.length>8?h('p',{class:'s muted'},'og '+(rest.length-8)+' til'):null));
+    rest.length?h('div',{class:'rows'},rest.slice(0,8).map(row)):(acts.length?null:h('p',{class:'empty'},'Ingenting nytt. Du er à jour.')),
+    rest.length>8?h('p',{class:'s muted'},'og '+(rest.length-8)+' til'):null,
+    actRows?h('div',{style:rest.length?'margin-top:10px;padding-top:8px;border-top:1.5px dashed var(--line)':''},actRows):null));
   return h('div',{class:'ov-wrap'},parts);
 }
 
@@ -2721,6 +2903,9 @@ function openProfile(){
   const f=h('form',{class:'form',onsubmit:async e=>{e.preventDefault();const n=nm.value.trim();if(!n)return;
     try{if(W.__profile&&W.__profile.rename)await W.__profile.rename(n);S.me=await S.user.me();if(S.me)S.me.name=n;NAMES[S.uid]=n;closeModal();renderAll();toast('Namnet er endra.');}catch(er){fail(er);}}},
     h('label',{class:'lbl'},'Brukarnamn',nm),
+    h('div',{class:'lbl'},'Fargen din',h('div',{class:'pcols'},PCOLORS.map(c=>h('button',{type:'button',class:'pcol'+(personColor(S.uid)===c?' on':''),style:'background:'+c,'aria-label':'Farge '+c,onclick:async e=>{
+      try{localStorage.setItem('troupers.mycolor',c);if(W.__profile&&W.__profile.setColor)await W.__profile.setColor(c);}catch(er){fail(er);}
+      e.currentTarget.parentNode.querySelectorAll('.pcol').forEach(x=>x.classList.remove('on'));e.currentTarget.classList.add('on');renderAll();}})))),
     h('div',{class:'lbl'},'Utsjånad',h('div',{class:'seg',role:'group','aria-label':'Utsjånad'},[['lys','Lyst'],['mork','Mørkt'],['auto','Automatisk']].map(([k,l])=>
       h('button',{type:'button','aria-pressed':String(themeGet()===k),onclick:e=>{themeSet(k);e.currentTarget.parentNode.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false'));e.currentTarget.setAttribute('aria-pressed','true');renderTop();}},l)))),
     h('div',{class:'row end'},h('button',{class:'btn',type:'button',onclick:closeModal},'Avbryt'),h('button',{class:'btn primary',type:'submit'},'Lagre namn')),
@@ -2734,7 +2919,7 @@ function openProfile(){
 }
 async function purgePrivate(){
   const b=priv();
-  for(const n of ['events','tasks','books','chapters','goals','subgoals','projects']){const s=await b.collection(n).get();for(const d of s.docs)await b.collection(n).doc(d.id).delete();}
+  for(const n of ['events','tasks','books','chapters','goals','subgoals','todos','activity','projects']){const s=await b.collection(n).get();for(const d of s.docs)await b.collection(n).doc(d.id).delete();}
   const its=await b.collection('items').get();
   for(const d of its.docs){
     for(const sub of ['blocks','chunks']){const c=b.collection('items').doc(d.id).collection(sub);const cs=await c.get();for(const x of cs.docs)await c.doc(x.id).delete();}
@@ -2884,7 +3069,7 @@ setInterval(()=>{WID.tick.forEach(f=>{try{f();}catch(_){}});},500);
 
 /* ---------- språk (norsk/engelsk) ---------- */
 const EN={'Mi side':'My page','Oversikt':'Overview','Dokument':'Documents','Kalender':'Calendar','Mål':'Goals','Skog':'Forest','Meldingar':'Messages','Innstillingar':'Settings',
-'Prosjekt':'Projects','Nytt prosjekt':'New project','Utsjånad':'Appearance','Lyst':'Light','Mørkt':'Dark','Automatisk':'Automatic','Alle prosjekt':'All projects','Ferdig':'Done','Bli med i prosjekt':'Join a project','Logg ut':'Log out','Logg inn':'Log in','Lag brukar':'Create account','Ny her? Lag brukar':'New here? Create account','Har du brukar? Logg inn':'Have an account? Log in',
+'Prosjekt':'Projects','Nytt prosjekt':'New project','To-do':'To-do','Å gjere':'To do','Held på':'In progress','Ferdig':'Done','Prioritet':'Priority','Per person':'By person','Liste':'List','Kanban':'Kanban','Ingen ansvarleg':'Nobody assigned','Opne skogen':'Open the forest','Invitasjonskode':'Invitation code','Kopier':'Copy','Avslutt og forlat':'End and leave','Fargen din':'Your colour','Utsjånad':'Appearance','Lyst':'Light','Mørkt':'Dark','Automatisk':'Automatic','Alle prosjekt':'All projects','Ferdig':'Done','Bli med i prosjekt':'Join a project','Logg ut':'Log out','Logg inn':'Log in','Lag brukar':'Create account','Ny her? Lag brukar':'New here? Create account','Har du brukar? Logg inn':'Have an account? Log in',
 'Du er ikkje med i nokon prosjekt enno.':'You are not in any projects yet.','Lastar …':'Loading …','Berre du ser det som ligg her.':'Only you can see what is here.',
 'I dag':'Today','Veker:':'Weeks:','Ny hending':'New event','Dag':'Day','Veke':'Week','Månad':'Month','Hendingar':'Events','Mål ':'Goals ','Ingenting':'Nothing','Førre':'Previous','Neste':'Next','Førre veke':'Previous week','Neste veke':'Next week',
 'Heile dagen':'All day','Avslått':'Declined','Avslå':'Decline','Eg er med likevel':'I will join after all','Du er med.':'You are attending.','Du har avslått.':'You have declined.','Kven er med?':'Who is attending?','Alle':'Everyone','Ingen':'None','Farge':'Colour','Merknad':'Note','Merknad (valfritt)':'Note (optional)','Legg til tittel':'Add title','Tittel':'Title','Dato':'Date','Frist':'Due date','Ansvarleg':'Responsible','Ferdig':'Done','Slett':'Delete','Avbryt':'Cancel','Lagre':'Save','Lukk':'Close','Rediger':'Edit','Hending':'Event','Til og med (valfritt)':'Until (optional)',
