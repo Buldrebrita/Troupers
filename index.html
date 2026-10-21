@@ -848,9 +848,8 @@ input[type=checkbox]:focus-visible{outline:3px solid var(--accent);outline-offse
 .kb-l{display:flex;flex-direction:column;gap:8px}.kb-e{color:var(--muted);text-align:center;margin:10px 0}
 .crit{position:fixed;right:18px;bottom:14px;z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:2px;pointer-events:none}
 .crit>*{pointer-events:auto}
-@keyframes crwalk{0%{transform:translateX(0)}100%{transform:translateX(-110px)}}
-.cr-body{border:0;background:none;padding:0;cursor:pointer;animation:crwalk 16s ease-in-out infinite alternate;filter:drop-shadow(0 3px 0 rgba(0,0,0,.12))}
-.cr-body svg{animation:crbob 1.1s ease-in-out infinite alternate;transform-origin:50% 100%}
+@keyframes crwalk{0%{transform:translateX(0) scaleX(-1)}49.9%{transform:translateX(-120px) scaleX(-1)}50%{transform:translateX(-120px) scaleX(1)}100%{transform:translateX(0) scaleX(1)}}
+.cr-body{border:0;background:none;padding:0;cursor:pointer;animation:crwalk 26s linear infinite;filter:drop-shadow(0 3px 0 rgba(0,0,0,.12))}
 @keyframes crbob{0%{transform:translateY(0) rotate(-2deg)}100%{transform:translateY(-5px) rotate(2deg)}}
 .cr-bub{position:relative;max-width:260px;background:var(--surface);color:var(--ink);border:2px solid var(--edge);border-radius:16px;padding:8px 12px 10px;box-shadow:3px 3px 0 var(--edge);font-size:16px;line-height:1.3;margin-right:10px}
 .cr-bub::after{content:"";position:absolute;right:34px;bottom:-9px;width:14px;height:14px;background:var(--surface);border-right:2px solid var(--edge);border-bottom:2px solid var(--edge);transform:rotate(45deg)}
@@ -861,6 +860,33 @@ input[type=checkbox]:focus-visible{outline:3px solid var(--accent);outline-offse
 .fcrit{cursor:pointer}.fcrit:hover .cr-s,.fcrit:focus .cr-s{filter:brightness(1.08)}
 .fun-ic{display:inline-flex;vertical-align:middle;margin-right:4px}.fun-ic svg{display:block}
 @media (prefers-reduced-motion:reduce){.cr-body,.cr-body svg{animation:none}}
+.sp-sel{font:400 14px var(--f-body);border:1.5px solid var(--edge);border-radius:8px;background:var(--surface);color:var(--ink);padding:1px 4px}
+/* dyr: delar som rører seg */
+.cr-s .tl{transform-box:fill-box;transform-origin:100% 100%;animation:wag 1.8s ease-in-out infinite alternate}
+@keyframes wag{from{transform:rotate(-7deg)}to{transform:rotate(9deg)}}
+.cr-s .lg,.cr-s .arm{transform-box:fill-box;transform-origin:50% 0%}
+.cr-s .hd{transform-box:fill-box;transform-origin:50% 100%}
+.cr-s .wg{transform-box:fill-box;transform-origin:50% 10%}
+.cr-s .ear{transform-box:fill-box;transform-origin:50% 100%;animation:ear 4s ease-in-out infinite}
+@keyframes ear{0%,86%,100%{transform:rotate(0)}90%{transform:rotate(-14deg)}95%{transform:rotate(4deg)}}
+.cr-s .bd{transform-box:fill-box;transform-origin:50% 100%;animation:breathe 2.6s ease-in-out infinite alternate}
+@keyframes breathe{from{transform:scaleY(1)}to{transform:scaleY(1.025)}}
+.cr-s.walk .lg.a,.cr-s.walk .arm.b{animation:swA .42s ease-in-out infinite alternate}
+.cr-s.walk .lg.b,.cr-s.walk .arm.a{animation:swB .42s ease-in-out infinite alternate}
+@keyframes swA{from{transform:rotate(-26deg)}to{transform:rotate(26deg)}}
+@keyframes swB{from{transform:rotate(26deg)}to{transform:rotate(-26deg)}}
+.cr-s.walk .bd{animation:bobw .42s ease-in-out infinite alternate}
+@keyframes bobw{from{transform:translateY(0)}to{transform:translateY(-2px)}}
+.cr-s.hop.walk .bd{animation:hopw .6s ease-in-out infinite}
+@keyframes hopw{0%,100%{transform:translateY(0) scaleY(.94)}45%{transform:translateY(-9px) scaleY(1.04)}}
+.cr-s.eat .hd{animation:nod .55s ease-in-out infinite alternate}
+@keyframes nod{from{transform:rotate(6deg)}to{transform:rotate(30deg)}}
+.cr-s .prop{opacity:0}.cr-s.eat .prop{opacity:1}
+.cr-s .eye{animation:blink 5s infinite;transform-box:fill-box;transform-origin:50% 50%}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+.cr-s .wg.a,.cr-s .wg.b{animation:wing 6s ease-in-out infinite}
+@keyframes wing{0%,90%,100%{transform:rotate(0)}94%{transform:rotate(-12deg)}}
+@media (prefers-reduced-motion:reduce){.cr-s *{animation:none!important}}
 </style>
 
 <div id="root"><div class="boot"><h1>Troupers</h1><p class="muted">Lastar …</p></div></div>
@@ -1957,6 +1983,13 @@ async function addSub(gid,inp,due,who){
   try{const n=Date.now();await col('subgoals').add({goal:gid,title:t,due:due||'',assignee:who||'',done:false,order:n,createdBy:S.uid,createdAt:n});assignNotify('',who,t);logAct('mal','la inn delmålet «'+t+'»','mal');S.ui.sform=null;renderView();}catch(e){fail(e);}
 }
 function metaBits(x){return [dueBadge(x),x.assignee?whoChip(x.assignee,false):null];}
+async function setGoalForest(g,on){try{await gcol(g).doc(g.id).update({forest:!!on});}catch(e){fail(e);}}
+async function setGoalSpecies(g,sp){try{await gcol(g).doc(g.id).update({species:sp});}catch(e){fail(e);}}
+async function setSubSpecies(x,sp){try{await col('subgoals').doc(x.id).update({species:sp});}catch(e){fail(e);}}
+function spSelect(cur,auto,fn,label){
+  const sel=h('select',{class:'sp-sel','aria-label':label},h('option',{value:''},auto),Object.keys(SPECIES).map(k=>h('option',{value:k},SPECIES[k])));
+  sel.value=SPECIES[cur]?cur:'';sel.onchange=()=>fn(sel.value);return sel;
+}
 function viewMal(){
   const p=perm();
   if(!S.loaded.goals||!S.loaded.subgoals||!S.loaded.tasks)return h('p',{class:'muted'},'Lastar …');
@@ -1976,7 +2009,7 @@ function viewMal(){
     const rows=subs.map(x=>h('div',{class:'r sub'+(x.done?' is-done':'')},
       h('input',{type:'checkbox','aria-label':'Ferdig',checked:!!x.done,disabled:!p.write,onchange:ev=>toggleSub(x.id,ev.target.checked)}),
       h('div',{class:'t'},h('button',{type:'button',class:'link-t ed',onclick:()=>openGoalModal(Object.assign({_kind:'sub'},x))},h('span',{class:'tl'},x.title),icon('edit',14)),
-        h('div',{class:'s row',style:'gap:8px'},metaBits(x))),
+        h('div',{class:'s row',style:'gap:8px'},metaBits(x),(p.write&&g.forest!==false)?spSelect(x.species,'Tre: som målet',v=>setSubSpecies(x,v),'Treslag for delmålet'):null)),
       canDel(x)?h('button',{class:'icon-btn',type:'button','aria-label':'Slett delmål',onclick:()=>delSub(x.id)},icon('trash',16)):null));
     const sf=S.ui.sform===g.id;
     const subAdd=!p.write?null:sf
@@ -1989,7 +2022,10 @@ function viewMal(){
         h('span',{class:'row',style:'gap:8px;margin-left:auto'},metaBits(g),
           canDel(g)?h('button',{class:'btn ghost sm',type:'button',onclick:()=>delGoal(g)},icon('trash',14),'Slett'):null)),
       h('div',{class:'bar'},h('i',{style:'width:'+pct+'%'})),
-      h('p',{class:'s muted',style:'margin:6px 0 8px'},subs.length?d+' av '+subs.length+' delmål ferdige · '+pct+' % · ein skog med '+subs.length+' tre':'Ingen delmål enno. Utan delmål blir målet eitt tre i skogen.'),
+      h('p',{class:'s muted',style:'margin:6px 0 8px'},g.forest===false?'Dette målet har ingen skog.':(subs.length?d+' av '+subs.length+' delmål ferdige · '+pct+' % · ein skog med '+subs.length+' tre':'Ingen delmål enno. Utan delmål blir målet eitt tre i skogen.')),
+      p.write?h('div',{class:'row sk-opt',style:'gap:10px;margin:0 0 8px'},
+        h('label',{class:'row',style:'gap:6px'},h('input',{type:'checkbox',checked:g.forest!==false,onchange:ev=>setGoalForest(g,ev.target.checked)}),'Skog for målet'),
+        g.forest!==false?spSelect(g.species,'Treslag: automatisk',v=>setGoalSpecies(g,v),'Treslag for målet'):null):null,
       rows.length?h('div',{class:'rows'},rows):null,
       subAdd);
   });
@@ -2381,11 +2417,11 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const SPECIES={lauv:'Lauvtre',gran:'Gran',kirsebaer:'Kirsebærtre',bjork:'Bjørk'};
 const SP_COL={lauv:'#8ED08F',gran:'#5FB083',kirsebaer:'#FFB6CB',bjork:'#CFEB8E'};
 function bkEff(){const o=Object.assign({},S.data.books);
-  goalsArr().forEach((g,i)=>{const subs=subsOf(g.id);const t=String(g.title||'Mål');
-    o['g_'+g.id]={title:t,short:t.length>18?t.slice(0,17)+'…':t,chapters:Math.max(1,subs.length),species:['lauv','kirsebaer','bjork','gran'][i%4],order:1000+i,goal:true,goalSelf:!subs.length,gid:g.id,subs:subs.map(x=>x.id)};});
+  goalsArr().forEach((g,i)=>{if(g.forest===false)return;const subs=subsOf(g.id);const t=String(g.title||'Mål');
+    o['g_'+g.id]={title:t,short:t.length>18?t.slice(0,17)+'…':t,chapters:Math.max(1,subs.length),species:(SPECIES[g.species]?g.species:['lauv','kirsebaer','bjork','gran'][i%4]),order:1000+i,goal:true,goalSelf:!subs.length,gid:g.id,subs:subs.map(x=>x.id)};});
   return o;}
 function chEff(){const o=Object.assign({},S.data.chapters);
-  goalsArr().forEach(g=>{const subs=subsOf(g.id);if(!subs.length){if(g.done)o[chKey('g_'+g.id,1)]={book:'g_'+g.id,n:1,by:g.doneBy||'',at:g.doneAt||0};return;}
+  goalsArr().forEach(g=>{if(g.forest===false)return;const subs=subsOf(g.id);if(!subs.length){if(g.done)o[chKey('g_'+g.id,1)]={book:'g_'+g.id,n:1,by:g.doneBy||'',at:g.doneAt||0};return;}
     subs.forEach((x,i)=>{if(x.done)o[chKey('g_'+g.id,i+1)]={book:'g_'+g.id,n:i+1,by:x.doneBy||'',at:x.doneAt||0};});});
   return o;}
 const booksArr=(real)=>Object.entries(real?S.data.books:bkEff()).map(([id,b])=>Object.assign({id},b)).sort((a,b)=>(a.order||0)-(b.order||0)||(a.createdAt||0)-(b.createdAt||0));
@@ -2465,10 +2501,16 @@ function forestSvg(st){
   // åsar
   parts.push('<path d="M0 150C150 118 300 160 460 138C640 112 800 150 1000 128L1000 480L0 480Z" class="o hill1"/>');
   parts.push('<path d="M0 214C180 188 330 224 520 204C700 184 860 224 1000 198L1000 480L0 480Z" class="o hill2"/>');
+  // buskar i bakgrunnen og i feltet
+  {const bc=['#8FCB93','#7DBF86','#A2D79A','#6FB57E'];let bu='';
+    const bush=(x,y,z,c,b)=>'<g transform="translate('+x.toFixed(0)+' '+y.toFixed(0)+') scale('+z.toFixed(2)+')"><ellipse cx="0" cy="2" rx="26" ry="5" fill="#000" opacity=".1" stroke="none"/><circle cx="-14" cy="-8" r="12" fill="'+c+'" class="o"/><circle cx="14" cy="-8" r="12" fill="'+c+'" class="o"/><circle cx="0" cy="-16" r="15" fill="'+c+'" class="o"/>'+(b?'<circle cx="-7" cy="-12" r="2.4" fill="#E0566B"/><circle cx="8" cy="-18" r="2.4" fill="#E0566B"/><circle cx="12" cy="-7" r="2.4" fill="#E0566B"/>':'')+'</g>';
+    for(let i=0;i<9;i++)bu+=bush(30+i*118+R()*60,196+R()*16,.5+R()*.35,bc[Math.floor(R()*4)],false);
+    for(let i=0;i<10;i++)bu+=bush(20+R()*960,250+R()*150,.6+R()*.5,bc[Math.floor(R()*4)],R()<.4);
+    parts.push(bu);}
   // gras og blomar
   let gr='';for(let i=0;i<34;i++){const x=20+R()*960,y=232+R()*190;gr+='<path d="M'+x.toFixed(0)+' '+y.toFixed(0)+'q2-9 4 0q2-9 4 0q2-9 4 0" class="o2"/>';}
   parts.push('<g opacity=".55">'+gr+'</g>');
-  if(f>=.25){const n=Math.round(8+34*f);const fc=['#FF9EB5','#FFE58A','#FFFFFF','#C3B2F0','#FFC48A'];let fl='';
+  {const n=Math.round(52+60*f);const fc=['#FF9EB5','#FFE58A','#FFFFFF','#C3B2F0','#FFC48A'];let fl='';
     for(let i=0;i<n;i++){const x=20+R()*960,y=236+R()*180,c=fc[Math.floor(R()*fc.length)];
       fl+='<g transform="translate('+x.toFixed(0)+' '+y.toFixed(0)+')"><path d="M0 0v7" class="o2"/><circle cx="0" cy="-2" r="4" fill="'+c+'" class="o" style="stroke-width:1.4"/><circle cx="0" cy="-2" r="1.4" fill="#F0A020"/></g>';}
     parts.push(fl);}
@@ -2476,7 +2518,7 @@ function forestSvg(st){
   // tre og tomme plantestader, bak til framme
   const sorted=lay.slots.slice().sort((a,b)=>a.y-b.y);let newIdx=0;const doneKeys=chEff();
   sorted.forEach(sl=>{
-    const done=!!doneKeys[sl.key];const sp=sl.book.species||'lauv';
+    const done=!!doneKeys[sl.key];const sbg=sl.book.subs&&S.data.subgoals[sl.book.subs[sl.n-1]];const sp=(sbg&&SPECIES[sbg.species]?sbg.species:sl.book.species)||'lauv';
     const label=esc((sl.book.short||sl.book.title||'Bok')+' kapittel '+sl.n+(done?', ferdig':', ikkje planta. Trykk for å plante'));
     let inner;
     if(done){const isNew=!sk.seen.has(sl.key);const delay=isNew?Math.min(newIdx++*45,1400):0;
@@ -3088,12 +3130,12 @@ setInterval(()=>{WID.tick.forEach(f=>{try{f();}catch(_){}});},500);
 
 /* ---------- dyra i skogen ---------- */
 const CD={
- ape:'<circle cx="13" cy="30" r="7" fill="#B07C52"/><circle cx="51" cy="30" r="7" fill="#B07C52"/><circle cx="13" cy="30" r="3" fill="#F0C9A0" stroke="none"/><circle cx="51" cy="30" r="3" fill="#F0C9A0" stroke="none"/><ellipse cx="32" cy="56" rx="15" ry="8" fill="#B07C52"/><circle cx="32" cy="30" r="17" fill="#B07C52"/><ellipse cx="32" cy="35" rx="12" ry="10" fill="#F0C9A0"/><circle cx="26.5" cy="29" r="2" fill="#272733" stroke="none"/><circle cx="37.5" cy="29" r="2" fill="#272733" stroke="none"/><path d="M22 23l7 2.5M42 21l-7 3.5" fill="none"/><path d="M26 38q6 5 12 0" fill="none"/>',
- gress:'<path d="M20 44L9 27L3 49" fill="none" stroke-width="3"/><path d="M34 47l4 11-5 2M43 46l5 10" fill="none"/><ellipse cx="28" cy="40" rx="21" ry="8" fill="#9ED36F" transform="rotate(-8 28 40)"/><ellipse cx="25" cy="35" rx="14" ry="5" fill="#CBEFA3" transform="rotate(-8 25 35)"/><path d="M50 25Q52 10 63 8M54 26Q61 15 63 21" fill="none"/><circle cx="49" cy="33" r="9" fill="#9ED36F"/><rect x="46" y="28" width="13" height="6" rx="2.5" fill="#272733"/><path d="M53 39q3 2.4 6 -1" fill="none"/>',
- royskatt:'<path d="M12 46Q-2 42 4 30Q10 35 14 41Z" fill="#C99A68"/><circle cx="4" cy="31" r="3" fill="#272733" stroke="none"/><ellipse cx="30" cy="45" rx="21" ry="9" fill="#C99A68"/><ellipse cx="33" cy="50" rx="15" ry="4" fill="#FFF4E0" stroke="none"/><path d="M18 52v6M30 53v6M42 52v6" fill="none" stroke-width="3.2"/><circle cx="50" cy="34" r="10" fill="#C99A68"/><circle cx="45" cy="25" r="3.6" fill="#C99A68"/><circle cx="55" cy="25" r="3.6" fill="#C99A68"/><ellipse cx="55" cy="38" rx="5.5" ry="4" fill="#FFF4E0"/><circle cx="59" cy="36.5" r="1.6" fill="#272733" stroke="none"/><circle cx="51" cy="31" r="1.8" fill="#272733" stroke="none"/><path d="M52 41q3 2 6 0" fill="none"/><path d="M40 42q9 5 19 -1" fill="none" stroke="#F27A8D" stroke-width="4.5"/>',
- hare:'<ellipse cx="24" cy="14" rx="5" ry="13" fill="#E8E0D4"/><ellipse cx="40" cy="14" rx="5" ry="13" fill="#E8E0D4"/><ellipse cx="24" cy="15" rx="2" ry="8" fill="#F2B6C4" stroke="none"/><ellipse cx="32" cy="56" rx="14" ry="8" fill="#E8E0D4"/><circle cx="32" cy="38" r="13" fill="#E8E0D4"/><circle cx="27" cy="36" r="1.8" fill="#272733" stroke="none"/><circle cx="37" cy="36" r="1.8" fill="#272733" stroke="none"/><path d="M30 42h4l-2 2.5z" fill="#F2879F"/><path d="M28 46q4 2 8 0" fill="none"/>',
- pinnsvin:'<path d="M8 52Q6 18 34 18Q60 20 58 52Z" fill="#8A6B52"/><path d="M10 40l4-11 3 8 4-12 3 10 5-12 2 10 5-10 1 10 5-8 1 10" fill="none" stroke-width="2.2"/><ellipse cx="49" cy="46" rx="11" ry="8" fill="#F0D2B0"/><circle cx="59" cy="46" r="2.4" fill="#272733" stroke="none"/><circle cx="50" cy="42" r="1.8" fill="#272733" stroke="none"/><path d="M20 54v5M34 54v5" fill="none" stroke-width="3.2"/>',
- ugle:'<path d="M18 16l5 8M46 16l-5 8" fill="none" stroke-width="3"/><ellipse cx="32" cy="38" rx="17" ry="20" fill="#A9906E"/><ellipse cx="32" cy="45" rx="10" ry="12" fill="#EADFC8"/><circle cx="25" cy="29" r="7.5" fill="#fff"/><circle cx="39" cy="29" r="7.5" fill="#fff"/><circle cx="25" cy="30" r="3" fill="#272733" stroke="none"/><circle cx="39" cy="30" r="3" fill="#272733" stroke="none"/><path d="M32 33l-3.5 5h7z" fill="#F2B84B"/><path d="M26 58v3M38 58v3" fill="none" stroke-width="3"/>'
+ ape:'<g class="bd"><g class="tl"><path d="M21 50Q3 50 5 33Q7 24 14 27" fill="none" stroke-width="7.4"/><path d="M21 50Q3 50 5 33Q7 24 14 27" fill="none" stroke="#B07C52" stroke-width="3.6"/></g><g class="lg a"><rect x="21" y="48" width="9" height="12" rx="4.5" fill="#B07C52"/><ellipse cx="25" cy="59" rx="6.5" ry="2.8" fill="#F0C9A0"/></g><g class="lg b"><rect x="34" y="48" width="9" height="12" rx="4.5" fill="#B07C52"/><ellipse cx="38.5" cy="59" rx="6.5" ry="2.8" fill="#F0C9A0"/></g><ellipse cx="32" cy="42" rx="14" ry="12" fill="#B07C52"/><ellipse cx="32" cy="45" rx="8.5" ry="8" fill="#F0C9A0" stroke="none"/><g class="arm a"><rect x="12" y="33" width="7.5" height="19" rx="3.7" fill="#B07C52"/><circle cx="15.8" cy="52" r="3.8" fill="#F0C9A0"/></g><g class="arm b"><rect x="44.5" y="33" width="7.5" height="19" rx="3.7" fill="#B07C52"/><circle cx="48.3" cy="52" r="3.8" fill="#F0C9A0"/></g><g class="prop"><path d="M40 33q10-3 12 7" fill="none" stroke="#272733" stroke-width="6.4"/><path d="M40 33q10-3 12 7" fill="none" stroke="#F6D24A" stroke-width="3.4"/></g><g class="hd"><circle cx="18" cy="21" r="5.5" fill="#B07C52"/><circle cx="46" cy="21" r="5.5" fill="#B07C52"/><circle cx="18" cy="21" r="2.4" fill="#F0C9A0" stroke="none"/><circle cx="46" cy="21" r="2.4" fill="#F0C9A0" stroke="none"/><circle cx="32" cy="22" r="13" fill="#B07C52"/><ellipse cx="32" cy="26" rx="9" ry="7.5" fill="#F0C9A0" stroke="none"/><circle cx="27.8" cy="21" r="1.9" fill="#272733" stroke="none"/><circle cx="36.2" cy="21" r="1.9" fill="#272733" stroke="none"/><path d="M24.5 16.5l6 2M39.5 15.5l-6 3" fill="none"/><path d="M28 28.5q4 3.4 8 0" fill="none"/></g></g>',
+ gress:'<g class="bd"><g class="lg b"><path d="M24 43L12 26L5 56" fill="none" stroke-width="7"/><path d="M24 43L12 26L5 56" fill="none" stroke="#7FB75A" stroke-width="3"/></g><g class="lg a"><path d="M38 47L41 58L35 60" fill="none" stroke-width="6.4"/><path d="M38 47L41 58L35 60" fill="none" stroke="#7FB75A" stroke-width="2.6"/></g><g class="lg b"><path d="M46 46L53 56" fill="none" stroke-width="6.4"/><path d="M46 46L53 56" fill="none" stroke="#7FB75A" stroke-width="2.6"/></g><ellipse cx="28" cy="42" rx="22" ry="8.5" fill="#9ED36F" transform="rotate(-6 28 42)"/><ellipse cx="25" cy="37.5" rx="15" ry="5" fill="#CBEFA3" transform="rotate(-6 25 37.5)"/><g class="hd"><g class="tl"><path d="M52 28Q54 12 63 8M56 29Q62 17 63.500 23" fill="none"/></g><circle cx="50" cy="36" r="9" fill="#9ED36F"/><rect x="46.500" y="31" width="14" height="6.500" rx="2.800" fill="#272733"/><path d="M53 42q3 2.400 6.500 -1" fill="none"/></g></g>',
+ royskatt:'<g class="bd"><g class="tl"><path d="M14 47Q-3 46 2 30Q9 36 17 41Z" fill="#C99A68"/><circle cx="3.500" cy="31.500" r="3.200" fill="#272733" stroke="none"/></g><g class="lg a"><rect x="14" y="50" width="6" height="10" rx="3" fill="#C99A68"/></g><g class="lg b"><rect x="22" y="50" width="6" height="10" rx="3" fill="#B98A58"/></g><ellipse cx="31" cy="46" rx="21" ry="9" fill="#C99A68"/><ellipse cx="33" cy="51" rx="15" ry="3.600" fill="#FFF4E0" stroke="none"/><g class="lg b"><rect x="38" y="50" width="6" height="10" rx="3" fill="#C99A68"/></g><g class="lg a"><rect x="46" y="50" width="6" height="10" rx="3" fill="#B98A58"/></g><g class="prop"><circle cx="58" cy="45" r="3.200" fill="#E0566B"/><path d="M58 42q1-3 3-3" fill="none"/></g><g class="hd"><circle cx="46" cy="29" r="3.500" fill="#C99A68"/><circle cx="56" cy="29" r="3.500" fill="#C99A68"/><circle cx="51" cy="37" r="9.500" fill="#C99A68"/><ellipse cx="57.500" cy="40.500" rx="5.500" ry="4" fill="#FFF4E0"/><circle cx="61.500" cy="39" r="1.600" fill="#272733" stroke="none"/><circle cx="52" cy="35" r="1.800" fill="#272733" stroke="none"/><path d="M54 43.500q3 2 6 0" fill="none"/></g><path d="M40 45q9 5 19 -1" fill="none" stroke="#272733" stroke-width="7.400"/><path d="M40 45q9 5 19 -1" fill="none" stroke="#F27A8D" stroke-width="4"/></g>',
+ hare:'<g class="bd"><g class="tl"><circle cx="12" cy="50" r="5.500" fill="#FFFFFF"/></g><ellipse cx="28" cy="46" rx="13" ry="13" fill="#E8E0D4"/><ellipse cx="22" cy="51" rx="8.500" ry="8" fill="#DDD3C3"/><g class="lg b"><ellipse cx="25" cy="58" rx="10" ry="3.600" fill="#E8E0D4"/></g><g class="arm a"><rect x="34" y="45" width="5.500" height="14" rx="2.700" fill="#E8E0D4"/></g><g class="arm b"><rect x="40" y="45" width="5.500" height="14" rx="2.700" fill="#DDD3C3"/></g><g class="prop"><path d="M44 49l10 -3l-10 -3z" fill="#F5A25B"/><path d="M54 46l4-3M54 46l4 1" fill="none" stroke="#6FBF6F"/></g><g class="hd"><g class="ear a"><ellipse cx="34" cy="10" rx="3.800" ry="11" fill="#E8E0D4" transform="rotate(-8 34 10)"/><ellipse cx="34" cy="11" rx="1.600" ry="7" fill="#F2B6C4" stroke="none" transform="rotate(-8 34 11)"/></g><g class="ear b"><ellipse cx="42" cy="10" rx="3.800" ry="11" fill="#E8E0D4" transform="rotate(8 42 10)"/></g><circle cx="38" cy="30" r="10.500" fill="#E8E0D4"/><circle cx="41.500" cy="28" r="1.800" fill="#272733" stroke="none"/><path d="M46 31h4l-2 2.500z" fill="#F2879F"/><path d="M44 36q3 2 6 0" fill="none"/></g></g>',
+ pinnsvin:'<g class="bd"><g class="lg a"><rect x="17" y="53" width="7" height="7" rx="3.500" fill="#F0D2B0"/></g><g class="lg b"><rect x="33" y="53" width="7" height="7" rx="3.500" fill="#F0D2B0"/></g><path d="M7 54Q5 19 31 17Q56 19 54 54Z" fill="#8A6B52"/><path d="M9 40l4-11 3 8 4-12 3 10 5-12 2 10 5-10 1 10 5-8 1 10 4-6" fill="none" stroke-width="2.200"/><path d="M12 48l3-6M22 50l2-7M32 50l1-7M42 48l0-7" fill="none" stroke="#6B4F3A" stroke-width="2"/><g class="prop"><circle cx="58" cy="57" r="3.500" fill="#E0566B"/></g><g class="hd"><ellipse cx="51" cy="47" rx="10.500" ry="8" fill="#F0D2B0"/><circle cx="60.500" cy="47.500" r="2.400" fill="#272733" stroke="none"/><circle cx="51.500" cy="43.500" r="1.800" fill="#272733" stroke="none"/><circle cx="46" cy="40" r="3.200" fill="#F0D2B0"/><path d="M52 51q3 1.600 6 0" fill="none"/></g></g>',
+ ugle:'<g class="bd"><rect x="6" y="55" width="52" height="5.500" rx="2.700" fill="#9A6B45"/><ellipse cx="25" cy="55.500" rx="4.500" ry="2.200" fill="#F2B84B"/><ellipse cx="39" cy="55.500" rx="4.500" ry="2.200" fill="#F2B84B"/><ellipse cx="32" cy="38" rx="16" ry="19" fill="#A9906E"/><ellipse cx="32" cy="45" rx="10" ry="12" fill="#EADFC8" stroke="none"/><path d="M26 40q3 2 6 0M32 46q3 2 6 0M26 50q3 2 6 0" fill="none" stroke-width="1.600"/><g class="wg a"><path d="M18 28Q6 42 17 55Q23 44 21 29Z" fill="#8F7855"/></g><g class="wg b"><path d="M46 28Q58 42 47 55Q41 44 43 29Z" fill="#8F7855"/></g><g class="hd"><path d="M17 15l6 8M47 15l-6 8" fill="none" stroke-width="3"/><circle cx="25" cy="29" r="7.500" fill="#fff"/><circle cx="39" cy="29" r="7.500" fill="#fff"/><circle class="eye" cx="25" cy="30" r="3" fill="#272733" stroke="none"/><circle class="eye" cx="39" cy="30" r="3" fill="#272733" stroke="none"/><path d="M32 33l-3.500 5h7z" fill="#F2B84B"/></g></g>'
 };
 const CR={
  ape:{name:'Bonzo',art:'apekatten',col:'#B07C52'},
@@ -3116,6 +3158,9 @@ const CSAY={
  ugle:['Uhu. Eg er vaken når du er det òg. Sov litt i natt.','Eg ser alt. Spesielt det du gøymer i dokumenta dine.']
 };
 const CQ={
+ hare:[{q:'Gulrot eller kløver?',a:['Gulrot','Kløver'],r:['Gulrot! Klassikar. Du og eg kjem til å bli vener.','Kløver, ein kar med smak!']}],
+ pinnsvin:[{q:'Eple eller sopp?',a:['Eple','Sopp'],r:['Eple. Eg er enig. Men ikkje ta pigg-testen.','Sopp! Eg samlar dei på ryggen. Det er praktisk.']}],
+ ugle:[{q:'Morgonfugl eller nattugle?',a:['Morgon','Natt'],r:['Hm. Då er du vel vaken no. Eg legg meg snart.','Ein av oss! Uhu. Men sov litt òg.']}],
  ape:[{q:'Raskt spørsmål: blå eller lilla?',a:['Blå','Lilla'],act:'farge'},{q:'Banan eller eple?',a:['Banan','Eple'],r:['Rett svar. Du får ein bananhandtrykk.','Eple?! Eg må sitte ned.']}],
  gress:[{q:'Er du ferdig med det du skulle i dag?',a:['Ja','Nei'],r:['Imponerande. Nesten.','Det trudde eg. Opp og hopp, då.']},{q:'Blå eller lilla?',a:['Blå','Lilla'],act:'farge'}],
  royskatt:[{q:'Korleis har dagen vore?',a:['Strålande','Heilt ok','Tung'],r:['Så bra! Ta med deg den kjensla vidare.','Heilt ok er heilt greitt. Du gjer det bra.','Ta det med ro. Gjer éin liten ting, så er det nok for no. Eg er her.']},{q:'Kaffe eller te?',a:['Kaffe','Te'],r:['Kaffe, mot! Ikkje gløym vatn òg.','Te, klokt val. Kos deg.']}]
@@ -3123,8 +3168,9 @@ const CQ={
 const CEVT={ape:['Banantørking','Klatrekonkurranse i stua','Møte med ei kokosnøtt','Kosetime med bananskal','Viktig: ape rundt'],
  gress:['Hoppetrening med Greta','Gresshoppekonsert (VIP)','Sassy-time. Ikkje spør.','Sole seg i gresset','Argumentere med ei sky']};
 const critOn=()=>{try{return localStorage.getItem('troupers.crit')!=='0';}catch(_){return true;}};
-function critSvg(k,px){return '<svg class="cr-s" viewBox="0 0 64 64" width="'+px+'" height="'+px+'" aria-hidden="true">'+CD[k]+'</svg>';}
-function critIc(k,px){const s=document.createElement('span');s.className='fun-ic';s.title=CR[k].name;s.innerHTML=critSvg(k,px);return s;}
+function critSvg(k,px,cls){return '<svg class="cr-s '+(HOP[k]?'hop ':'')+(cls===undefined?'walk':cls)+'" viewBox="0 0 64 64" width="'+px+'" height="'+px+'" aria-hidden="true">'+CD[k]+'</svg>';}
+const HOP={gress:1,hare:1};
+function critIc(k,px){const s=document.createElement('span');s.className='fun-ic';s.title=CR[k].name;s.innerHTML=critSvg(k,px,'');return s;}
 const CS={cur:null,hide:0,t:0,prank:0};
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 function critClose(){clearTimeout(CS.hide);if(CS.cur){CS.cur.remove();CS.cur=null;}}
@@ -3183,7 +3229,7 @@ function critAuto(){
   clearTimeout(CS.t);
   const ae=document.activeElement;const busy=!critOn()||document.hidden||!S.uid||S.modal||CS.cur||(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName));
   if(busy){CS.t=setTimeout(critAuto,busy&&critOn()?30000:120000);return;}
-  const k=pick(['ape','gress','royskatt']);const r=Math.random();
+  const k=pick(['ape','gress','royskatt','hare','pinnsvin','ugle']);const r=Math.random();
   if((k==='ape'||k==='gress')&&r<.25)critPrankEvent(k);
   else if(r<.65&&CQ[k])critAsk(k,pick(CQ[k]));
   else critShow(k,pick(CSAY[k]));
@@ -3197,12 +3243,40 @@ function critInit(){
   CS.t=setTimeout(critAuto,(25+Math.random()*35)*1000);
 }
 critInit();
+/* vandring i skogen */
+const CW={};const CWS={ape:[110,330,16],gress:[330,372,34],royskatt:[640,352,26],hare:[480,310,30],pinnsvin:[860,386,10],ugle:[955,268,0]};
+function cwSt(k){if(!CW[k]){const d=CWS[k];CW[k]={x:d[0],y:d[1],dir:1,mode:'idle',until:performance.now()+1000+Math.random()*3000,tx:d[0],ty:d[1]};}return CW[k];}
+function cwCls(k,st){return 'fcrit cr-s '+(HOP[k]?'hop ':'')+(st.mode==='walk'?'walk':st.mode==='eat'?'eat':'');}
 function critForest(){
-  const pos=[['ape',110,330],['hare',470,300],['gress',330,380],['royskatt',640,352],['pinnsvin',860,386],['ugle',955,268]];
-  return pos.map(([k,x,y])=>'<g class="fcrit" data-critter="'+k+'" tabindex="0" role="button" aria-label="'+CR[k].name+', '+CR[k].art+'. Trykk for å snakke" transform="translate('+x+' '+y+')">'
-    +'<title>'+CR[k].name+' ('+CR[k].art+')</title><ellipse cx="0" cy="2" rx="22" ry="5" fill="#000" opacity=".14"/>'
-    +'<g class="cr-s" transform="translate(-29 -57) scale(.9)">'+CD[k]+'</g><text y="16" class="cr-n" text-anchor="middle">'+CR[k].name+'</text></g>').join('');
+  return Object.keys(CWS).map(k=>{const st=cwSt(k);
+    return '<g class="'+cwCls(k,st)+'" data-critter="'+k+'" tabindex="0" role="button" aria-label="'+CR[k].name+', '+CR[k].art+'. Trykk for å snakke" transform="translate('+st.x.toFixed(1)+' '+st.y.toFixed(1)+')">'
+    +'<title>'+CR[k].name+' ('+CR[k].art+')</title><ellipse cx="0" cy="1" rx="20" ry="4.500" fill="#000" opacity=".14" stroke="none"/>'
+    +'<g class="fl" transform="scale('+st.dir+' 1)"><g transform="translate(-32 -60)">'+CD[k]+'</g></g>'
+    +'<text y="15" class="cr-n" text-anchor="middle">'+CR[k].name+'</text></g>';}).join('');
 }
+let cwT=0;
+function cwTick(){
+  const now=performance.now();const dt=Math.min(.3,(now-(cwT||now))/1000);cwT=now;
+  if(document.hidden)return;
+  const svg=document.querySelector('.forest svg');if(!svg)return;
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  for(const k in CWS){const st=cwSt(k);const el=svg.querySelector('.fcrit[data-critter="'+k+'"]');if(!el)continue;
+    const sp=CWS[k][2];
+    if(st.mode==='walk'){
+      const dx=st.tx-st.x,dy=st.ty-st.y,d=Math.hypot(dx,dy);const step=sp*dt;
+      if(d<=step+.5){st.x=st.tx;st.y=st.ty;const r=Math.random();
+        if(r<.5){st.mode='eat';st.until=now+3000+Math.random()*4000;}else{st.mode='idle';st.until=now+1500+Math.random()*3500;}}
+      else{st.x+=dx/d*step;st.y+=dy/d*step;if(Math.abs(dx)>1)st.dir=dx>0?1:-1;}
+    }else if(now>st.until){
+      if(!sp){st.mode=Math.random()<.3?'eat':'idle';st.until=now+3000+Math.random()*5000;}
+      else{st.mode='walk';st.tx=Math.max(50,Math.min(950,st.x+(Math.random()-.5)*360));st.ty=Math.max(255,Math.min(400,st.y+(Math.random()-.5)*90));}
+    }
+    el.setAttribute('transform','translate('+st.x.toFixed(1)+' '+st.y.toFixed(1)+')');
+    const c=cwCls(k,st);if(el.getAttribute('class')!==c)el.setAttribute('class',c);
+    const fl=el.querySelector('.fl');const t='scale('+st.dir+' 1)';if(fl&&fl.getAttribute('transform')!==t)fl.setAttribute('transform',t);
+  }
+}
+setInterval(cwTick,80);
 /* hending-utløp */
 function critExpired(e){return e&&e.expires&&e.expires<Date.now();}
 setInterval(()=>{try{
