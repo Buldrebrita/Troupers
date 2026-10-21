@@ -2635,31 +2635,52 @@ function forestLayout(books){
   });
   return {slots,signs};
 }
+function mixc(a,b,t){const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const A=p(a),B=p(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('');}
 function treeSvg(sp,r){
   const pick=a=>a[Math.floor(r()*a.length)];const rn=(a,b)=>a+r()*(b-a);const f=v=>v.toFixed(1);
-  if(sp==='gran'){const g=pick(['#6FBF8E','#5FB083','#7CCB98','#4FA578','#86D3A0','#5AA98A']);const dk=pick(['#5FB083','#4F9E74','#68B58A']);
-    const th=rn(10,20),lay=pick([3,3,4,4,5]),wd=rn(26,36),hh=rn(.85,1.2);let s='<rect x="-4" y="'+f(-th)+'" width="8" height="'+f(th)+'" rx="2" fill="#9A6B45" class="o"/>';
-    for(let i=0;i<lay;i++){const t=i/(lay-1||1);const yb=-th*.9-i*(80*hh/lay)*.78+4,yt=yb-(46*hh)*(1-t*.3),w2=wd*(1-t*.55);
-      s+='<polygon points="0,'+f(yt)+' '+f(-w2)+','+f(yb)+' '+f(w2)+','+f(yb)+'" fill="'+(i%2?dk:g)+'" class="o"/>';}
-    if(r()<.25)s+='<circle cx="'+f(rn(-8,8))+'" cy="'+f(-th-rn(14,40))+'" r="2.4" fill="#E0566B"/>';
+  const trunk=(th,col,w)=>{w=w||5;return '<path d="M'+f(-w-4)+' 1Q'+f(-w)+' -2 '+f(-w+.6)+' -8L'+f(-w*.62)+' '+f(-th)+'L'+f(w*.62)+' '+f(-th)+'L'+f(w-.6)+' -8Q'+f(w)+' -2 '+f(w+4)+' 1Z" fill="'+col+'" class="o"/>'
+    +'<path d="M'+f(-w*.2)+' -4v'+f(-th*.45)+'M'+f(w*.3)+' '+f(-th*.35)+'v'+f(-th*.4)+'" class="o2" stroke-width="1.2" opacity=".5"/>';};
+  const blob=(cx,cy,rr,col)=>'<circle cx="'+f(cx)+'" cy="'+f(cy)+'" r="'+f(rr)+'" fill="'+col+'" class="o"/>';
+  const hl=(cx,cy,rr,col)=>'<circle cx="'+f(cx)+'" cy="'+f(cy)+'" r="'+f(rr)+'" fill="'+col+'" stroke="none"/>';
+  if(sp==='gran'){
+    const g=pick(['#4FA578','#5FB083','#6FBF8E','#3F9468','#59AE86']);const dk=mixc(g,'#12382A',.38),lt=mixc(g,'#E8FFE8',.28);
+    const th=rn(10,18),lay=pick([4,4,5,5,6]),wd=rn(27,36),hh=rn(.9,1.2);
+    let s=trunk(th,'#8C5F3C',4);const step=(84*hh)/lay;
+    for(let i=0;i<lay;i++){const t=i/(lay-1||1);const yb=-th*.7-i*step*.78+4,yt=yb-step*1.5,w2=wd*(1-t*.62);
+      let pts='0,'+f(yt);const n=5;
+      for(let k=0;k<=n;k++){const x=-w2+(2*w2)*k/n;pts+=' '+f(x)+','+f(yb+(k%2?4:-1));}
+      s+='<polygon points="'+pts+'" fill="'+g+'" class="o"/>';
+      s+='<polygon points="0,'+f(yt+2)+' '+f(w2*.95)+','+f(yb)+' '+f(w2*.25)+','+f(yb+1)+'" fill="'+dk+'" opacity=".42" stroke="none"/>';
+      s+='<path d="M'+f(-w2*.55)+' '+f(yb-3)+'L'+f(-w2*.15)+' '+f(yt+step*.45)+'" stroke="'+lt+'" stroke-width="2" stroke-linecap="round" fill="none" opacity=".8"/>';}
+    s+='<path d="M0 '+f(-th*.7-(lay-1)*step*.78-step*1.5+2)+'l-2.5 -9l2.5 3l2.5 -3z" fill="'+dk+'" class="o2"/>';
+    if(r()<.5)for(let i=0;i<3;i++)s+='<circle cx="'+f(rn(-18,18))+'" cy="'+f(-th-rn(8,60))+'" r="2.6" fill="'+pick(['#E0566B','#F2C14E','#8EC5FF'])+'" class="o2" stroke-width="1"/>';
     return s;}
-  if(sp==='bjork'){const g=pick(['#CFEB8E','#C3E27E','#D8F09C','#B9DC73','#E2F4A8','#A9D26A']);const h2=rn(44,64);
-    let s='<rect x="-4" y="'+f(-h2)+'" width="8" height="'+f(h2)+'" rx="2" fill="#F4F1EA" class="o"/>';
-    for(let i=0;i<3+Math.floor(r()*3);i++){const y=-rn(6,h2-4);s+='<path d="M'+f(r()<.5?-4:0)+' '+f(y)+'h'+f(rn(3,5))+'" class="o2"/>';}
-    const nb=pick([3,4,4,5]);
-    for(let i=0;i<nb;i++){const cx=rn(-18,18),cy=-h2-rn(-2,16),rx=rn(11,19);s+='<ellipse cx="'+f(cx)+'" cy="'+f(cy)+'" rx="'+f(rx)+'" ry="'+f(rx*rn(.8,1.1))+'" fill="'+g+'" class="o"/>';}
-    s+='<ellipse cx="0" cy="'+f(-h2-rn(10,22))+'" rx="'+f(rn(16,23))+'" ry="'+f(rn(17,23))+'" fill="'+g+'" class="o"/>';
+  if(sp==='bjork'){
+    const g=pick(['#CFEB8E','#C3E27E','#D8F09C','#B9DC73','#E8D56A','#A9D26A']);const dk=mixc(g,'#2E5A22',.3),lt=mixc(g,'#FFFFFF',.4);
+    const h2=rn(46,64);
+    let s='<path d="M-5 1Q-3 -2 -3.6 -8L-3 '+f(-h2)+'L3 '+f(-h2)+'L3.6 -8Q3 -2 5 1Z" fill="#F7F4EC" class="o"/>';
+    for(let i=0;i<4+Math.floor(r()*3);i++){const y=-rn(5,h2-6);s+='<rect x="'+f(r()<.5?-3.4:.2)+'" y="'+f(y)+'" width="'+f(rn(2.5,3.4))+'" height="1.8" rx=".8" fill="#3A3A44" stroke="none"/>';}
+    for(let i=0;i<3;i++){const y=-h2+rn(4,18),d=r()<.5?-1:1;s+='<path d="M0 '+f(y)+'Q'+f(d*8)+' '+f(y-8)+' '+f(d*rn(14,22))+' '+f(y-rn(12,20))+'" fill="none" class="o2" stroke="#6B5A48" stroke-width="2"/>';}
+    const nb=pick([5,6,7]);
+    for(let i=0;i<nb;i++){const cx=rn(-19,19),cy=-h2-rn(-2,22),rx=rn(9,14);s+='<ellipse cx="'+f(cx)+'" cy="'+f(cy)+'" rx="'+f(rx)+'" ry="'+f(rx*rn(.85,1.2))+'" fill="'+(i%3?g:dk)+'" class="o"/>';}
+    for(let i=0;i<nb;i++)s+='<ellipse cx="'+f(rn(-18,18)-3)+'" cy="'+f(-h2-rn(2,24))+'" rx="4" ry="2.6" fill="'+lt+'" stroke="none" opacity=".8"/>';
     return s;}
   const pink=sp==='kirsebaer';
-  const g=pink?pick(['#FFB6CB','#FFC4D6','#F9A8C2','#FFD0DE','#F6A0BC','#FFC0CF']):pick(['#8ED08F','#9ADB9A','#7CC584','#A6E0A0','#6FBF7C','#8AD6A2','#B0DE8C']);
-  const th=rn(22,40);
-  let s='<rect x="-5" y="'+f(-th)+'" width="10" height="'+f(th)+'" rx="2" fill="'+pick(['#9A6B45','#8C5F3C','#A87650'])+'" class="o"/>';
-  if(r()<.4)s+='<path d="M0 '+f(-th*.5)+'l'+f(rn(8,14))+' '+f(-rn(8,14))+'" class="o2"/>';
-  const nb=pick([3,3,4,4,5]);
-  for(let i=0;i<nb;i++){const a=i/nb*Math.PI*2+rn(0,.8);const cx=Math.cos(a)*rn(6,17),cy=-th-14+Math.sin(a)*rn(2,13)-6;s+='<circle cx="'+f(cx)+'" cy="'+f(cy)+'" r="'+f(rn(12,19))+'" fill="'+g+'" class="o"/>';}
-  s+='<circle cx="'+f(rn(-6,6))+'" cy="'+f(-th-rn(26,36))+'" r="'+f(rn(15,22))+'" fill="'+g+'" class="o"/><circle cx="-7" cy="'+f(-th-rn(28,38))+'" r="4" fill="#fff" opacity=".4"/>';
-  if(pink)for(let i=0;i<4+Math.floor(r()*5);i++)s+='<circle cx="'+f(rn(-26,26))+'" cy="'+f(-th-rn(8,44))+'" r="2.4" fill="#fff"/>';
-  else if(r()<.3)for(let i=0;i<3;i++)s+='<circle cx="'+f(rn(-20,20))+'" cy="'+f(-th-rn(10,36))+'" r="2.6" fill="#E0566B"/>';
+  const g=pink?pick(['#FFB6CB','#FFC4D6','#F9A8C2','#FFD0DE','#F6A0BC']):pick(['#8ED08F','#7CC584','#6FBF7C','#8AD6A2','#9ADB9A','#7EC47F']);
+  const dk=mixc(g,pink?'#8A2A55':'#14503A',.32),lt=mixc(g,'#FFFFFF',.42);
+  const th=rn(24,38);let s=trunk(th,pink?'#6E4A3A':pick(['#9A6B45','#8C5F3C','#A87650']),5.5);
+  if(r()<.55)s+='<path d="M0 '+f(-th*.55)+'Q'+f(8)+' '+f(-th*.7)+' '+f(rn(12,17))+' '+f(-th*.9)+'" fill="none" class="o2" stroke="#6B4A32" stroke-width="3"/>';
+  const pts=[];const nb=pick([5,6,6,7]);
+  for(let i=0;i<nb;i++){const a2=i/nb*Math.PI*2+rn(0,.7);pts.push([Math.cos(a2)*rn(8,19),-th-18+Math.sin(a2)*rn(3,14)-4,rn(12,18)]);}
+  pts.push([rn(-5,5),-th-rn(32,38),rn(15,21)]);
+  pts.forEach(p=>{s+=blob(p[0]+2,p[1]+3,p[2],dk);});
+  pts.forEach(p=>{s+=blob(p[0],p[1],p[2],g);});
+  pts.forEach(p=>{s+=hl(p[0]-p[2]*.3,p[1]-p[2]*.35,p[2]*.45,lt);});
+  for(let i=0;i<7;i++)s+='<path d="M'+f(rn(-24,24))+' '+f(-th-rn(8,48))+'q3 -4 6 0" fill="none" stroke="'+dk+'" stroke-width="1.4" stroke-linecap="round" opacity=".6"/>';
+  if(pink){for(let i=0;i<10+Math.floor(r()*8);i++){const x=rn(-26,26),y=-th-rn(8,50);
+      s+='<g transform="translate('+f(x)+' '+f(y)+')" stroke="none"><circle r="3.2" fill="#fff"/><circle r="1.2" fill="#E8689A"/></g>';}
+    for(let i=0;i<4;i++)s+='<ellipse cx="'+f(rn(-24,24))+'" cy="'+f(rn(-2,5))+'" rx="2.4" ry="1.3" fill="#FFB6CB" stroke="none" transform="rotate('+f(rn(-30,30))+')"/>';}
+  else if(r()<.4)for(let i=0;i<4;i++)s+='<circle cx="'+f(rn(-22,22))+'" cy="'+f(-th-rn(10,44))+'" r="2.8" fill="#E0566B" class="o2" stroke-width="1"/>';
   return s;
 }
 function forestSvg(st){
