@@ -2669,7 +2669,7 @@ function forestSvg(st){
     const bush=(x,y,z,c,b)=>'<g transform="translate('+x.toFixed(0)+' '+y.toFixed(0)+') scale('+z.toFixed(2)+')"><ellipse cx="0" cy="2" rx="26" ry="5" fill="#000" opacity=".1" stroke="none"/><circle cx="-14" cy="-8" r="12" fill="'+c+'" class="o"/><circle cx="14" cy="-8" r="12" fill="'+c+'" class="o"/><circle cx="0" cy="-16" r="15" fill="'+c+'" class="o"/>'+(b?'<circle cx="-7" cy="-12" r="2.4" fill="#E0566B"/><circle cx="8" cy="-18" r="2.4" fill="#E0566B"/><circle cx="12" cy="-7" r="2.4" fill="#E0566B"/>':'')+'</g>';
     for(let i=0;i<9;i++)bu+=bush(30+i*118+R()*60,196+R()*16,.5+R()*.35,bc[Math.floor(R()*4)],false);
     for(let i=0;i<6;i++)R();
-    parts.push('<g opacity=".42">'+bu+'</g>');}
+    parts.push('<g opacity="1">'+bu+'</g>');}
   // gras og blomar
   let gr='';for(let i=0;i<34;i++){const x=20+R()*960,y=232+R()*190;gr+='<path d="M'+x.toFixed(0)+' '+y.toFixed(0)+'q2-9 4 0q2-9 4 0q2-9 4 0" class="o2"/>';}
   parts.push('<g opacity=".55">'+gr+'</g>');
