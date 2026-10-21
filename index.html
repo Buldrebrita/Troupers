@@ -2050,11 +2050,13 @@ function openGoalModal(x){
     const data={title:v,due:due.value||'',assignee:who?who.value:'',species:spSel.value};
     if(kind==='goal'){data.short=short.value.trim();data.forest=forest.checked;}
     try{
-      if(isNew){const n=Date.now();Object.assign(data,{done:false,order:n,createdBy:S.uid,createdAt:n});if(kind==='sub')data.goal=x.goal;await coll.add(data);}
+      if(isNew){const n=Date.now();Object.assign(data,{done:false,order:n,createdBy:S.uid,createdAt:n});if(kind==='sub'){data.goal=x.goal;if(!data.assignee){const g=goalsArr().find(q=>q.id===x.goal);if(g&&g.assignee)data.assignee=g.assignee;}}await coll.add(data);}
       else{
         if(done.checked!==!!x.done){
           if(kind==='sub')await toggleSub(x.id,done.checked);else await setGoalDone(Object.assign({},x,{_t:x._t}),done.checked);}
-        await coll.doc(x.id).update(data);}
+        await coll.doc(x.id).update(data);
+        if(kind==='goal'&&(x.assignee||'')!==(data.assignee||'')){
+          for(const sb of subsOf(x.id)){if((sb.assignee||'')===(x.assignee||''))await col('subgoals').doc(sb.id).update({assignee:data.assignee||''});}}}
       assignNotify(x.assignee,data.assignee,v);
       closeModal();renderView();
     }catch(er){fail(er);}}},
@@ -2088,6 +2090,7 @@ async function addGoal(inp,due,who){
 }
 async function addSub(gid,inp,due,who){
   const t=inp.value.trim();if(!t){inp.focus();return;}
+  if(!who){const g=goalsArr().find(q=>q.id===gid);if(g&&g.assignee)who=g.assignee;}
   try{const n=Date.now();await col('subgoals').add({goal:gid,title:t,due:due||'',assignee:who||'',done:false,order:n,createdBy:S.uid,createdAt:n});assignNotify('',who,t);logAct('mal','la inn delmålet «'+t+'»','mal');S.ui.sform=null;renderView();}catch(e){fail(e);}
 }
 function metaBits(x){return [dueBadge(x),x.assignee?whoChip(x.assignee,false):null];}
