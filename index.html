@@ -2580,7 +2580,7 @@ function skogStats(){
   return {books,total,done,per};
 }
 function forestLayout(books){
-  const W=1000,bottom=392,top=206;const total=books.reduce((s,b)=>s+b.chapters,0)||1;
+  const W=1000,bottom=306,top=176;const total=books.reduce((s,b)=>s+b.chapters,0)||1;
   const gap=books.length>1?34:0;const usable=W-70-gap*(books.length-1);
   let x0=35;const slots=[],signs=[];
   books.forEach(b=>{
@@ -2593,8 +2593,8 @@ function forestLayout(books){
       pts.push(pl);
       const r2=rng(b.id+'-v'+(i+1));const depth=(pl.y-top)/(bottom-top);
       slots.push({bid:b.id,n:i+1,key:chKey(b.id,i+1),book:b,seed:b.id+'-'+(i+1),x:pl.x,y:pl.y,
-        s:(.62+.42*depth)*(.8+r2()*.42),fl:r2()<.5?-1:1,tilt:(r2()-.5)*6});}
-    signs.push({x:x0+w/2,y:bottom+58,label:b.short||b.title,id:b.id,n:b.chapters});
+        s:(.58+.4*depth)*(.8+r2()*.42),fl:r2()<.5?-1:1,tilt:(r2()-.5)*6});}
+    signs.push({x:x0+w/2,y:450,label:b.short||b.title,id:b.id,n:b.chapters});
     x0+=w+gap;
   });
   return {slots,signs};
@@ -2653,8 +2653,8 @@ function forestSvg(st){
   {const bc=['#8FCB93','#7DBF86','#A2D79A','#6FB57E'];let bu='';
     const bush=(x,y,z,c,b)=>'<g transform="translate('+x.toFixed(0)+' '+y.toFixed(0)+') scale('+z.toFixed(2)+')"><ellipse cx="0" cy="2" rx="26" ry="5" fill="#000" opacity=".1" stroke="none"/><circle cx="-14" cy="-8" r="12" fill="'+c+'" class="o"/><circle cx="14" cy="-8" r="12" fill="'+c+'" class="o"/><circle cx="0" cy="-16" r="15" fill="'+c+'" class="o"/>'+(b?'<circle cx="-7" cy="-12" r="2.4" fill="#E0566B"/><circle cx="8" cy="-18" r="2.4" fill="#E0566B"/><circle cx="12" cy="-7" r="2.4" fill="#E0566B"/>':'')+'</g>';
     for(let i=0;i<9;i++)bu+=bush(30+i*118+R()*60,196+R()*16,.5+R()*.35,bc[Math.floor(R()*4)],false);
-    for(let i=0;i<10;i++)bu+=bush(20+R()*960,250+R()*150,.6+R()*.5,bc[Math.floor(R()*4)],R()<.4);
-    parts.push(bu);}
+    for(let i=0;i<6;i++)bu+=bush(20+R()*960,236+R()*70,.55+R()*.4,bc[Math.floor(R()*4)],R()<.3);
+    parts.push('<g opacity=".42">'+bu+'</g>');}
   // gras og blomar
   let gr='';for(let i=0;i<34;i++){const x=20+R()*960,y=232+R()*190;gr+='<path d="M'+x.toFixed(0)+' '+y.toFixed(0)+'q2-9 4 0q2-9 4 0q2-9 4 0" class="o2"/>';}
   parts.push('<g opacity=".55">'+gr+'</g>');
@@ -3487,7 +3487,7 @@ function critInit(){
 }
 critInit();
 /* vandring i skogen */
-const CW={};const CWS={ape:[110,330,16],gress:[330,372,34],royskatt:[640,352,26],hare:[480,310,30],pinnsvin:[860,386,10],ugle:[955,268,0]};
+const CW={};const CWS={ape:[110,350,16],gress:[330,385,34],royskatt:[640,368,26],hare:[480,338,30],pinnsvin:[860,396,10],ugle:[955,335,0]};
 function cwSt(k){if(!CW[k]){const d=CWS[k];CW[k]={x:d[0],y:d[1],dir:1,mode:'idle',until:performance.now()+1000+Math.random()*3000,tx:d[0],ty:d[1]};}return CW[k];}
 function cwCls(k,st){return 'fcrit cr-s '+(HOP[k]?'hop ':'')+(st.mode==='walk'?'walk':st.mode==='eat'?'eat':'');}
 function critForest(){
@@ -3512,7 +3512,7 @@ function cwTick(){
       else{st.x+=dx/d*step;st.y+=dy/d*step;if(Math.abs(dx)>1)st.dir=dx>0?1:-1;}
     }else if(now>st.until){
       if(!sp){st.mode=Math.random()<.3?'eat':'idle';st.until=now+3000+Math.random()*5000;}
-      else{st.mode='walk';st.tx=Math.max(50,Math.min(950,st.x+(Math.random()-.5)*360));st.ty=Math.max(255,Math.min(400,st.y+(Math.random()-.5)*90));}
+      else{st.mode='walk';st.tx=Math.max(50,Math.min(950,st.x+(Math.random()-.5)*360));st.ty=Math.max(318,Math.min(408,st.y+(Math.random()-.5)*70));}
     }
     el.setAttribute('transform','translate('+st.x.toFixed(1)+' '+st.y.toFixed(1)+')');
     const c=cwCls(k,st);if(el.getAttribute('class')!==c)el.setAttribute('class',c);
