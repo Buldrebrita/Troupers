@@ -887,6 +887,9 @@ input[type=checkbox]:focus-visible{outline:3px solid var(--accent);outline-offse
 .cr-s .wg.a,.cr-s .wg.b{animation:wing 6s ease-in-out infinite}
 @keyframes wing{0%,90%,100%{transform:rotate(0)}94%{transform:rotate(-12deg)}}
 @media (prefers-reduced-motion:reduce){.cr-s *{animation:none!important}}
+.plant-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;width:100%;cursor:pointer;color:var(--ink);font:inherit;padding:40px 20px}
+.plant-btn strong{font:400 34px var(--f-display)}.plant-btn .pl-ic{display:inline-flex}
+.plant-btn:hover{background:color-mix(in srgb,var(--y) 40%,var(--surface))}
 </style>
 
 <div id="root"><div class="boot"><h1>Troupers</h1><p class="muted">Lastar …</p></div></div>
@@ -1803,8 +1806,7 @@ function viewOversikt(){
   if(st.books.length){
     forest=h('div',{class:'ov-forest'},skogScene(st),h('div',{class:'row end',style:'margin-top:6px'},h('button',{class:'btn ghost sm',type:'button',onclick:()=>setTab('skog')},icon('tree',14),'Opne skogen')));
   }else{
-    forest=h('div',{class:'ov-forest'},h('p',{class:'empty'},'Legg inn bøkene de les. For kvart kapittel de blir ferdige med, veks det eit tre.'),
-      p.manage?h('button',{class:'btn primary',type:'button',onclick:()=>setTab('skog')},icon('plus'),'Kom i gang med skogen'):null);
+    forest=h('div',{class:'ov-forest'},plantBtn(p.write));
   }
   return h('div',{class:'ov-wrap'},nytSection(),calCard,forest);
 }
@@ -2655,17 +2657,17 @@ function skogMini(){
     h('div',{class:'bar',style:'margin-top:8px'},h('i',{style:'width:'+pct+'%'})),
     h('p',{class:'s muted',style:'margin-top:8px'},skogMsg(st.total?st.done/st.total:0,st.done,st.total)));
 }
+function plantBtn(can){
+  const inner=[h('strong',null,'Plant ein skog')];
+  if(!can)return h('div',{class:'empty-big'},...inner);
+  return h('button',{type:'button',class:'empty-big plant-btn',onclick:()=>{S.ui.gform=true;setTab('mal');setTimeout(()=>{const e=document.getElementById('gf-t');if(e)e.focus();},60);}},...inner);
+}
 function viewSkog(){
   const p=perm();const sk=skogState();
   if(!S.loaded.books||!S.loaded.chapters||!S.loaded.goals||!S.loaded.subgoals)return h('p',{class:'muted'},'Lastar …');
   const st=skogStats();
   if(!st.books.length){
-    return h('div',{class:'empty-big'},h('strong',null,'Plant ein skog saman'),
-      h('p',null,'Legg inn bøkene de les. For kvart kapittel de blir ferdige med, veks det eit tre. Er alle kapitla gjennomførte, står ein heil skog der.'),
-      p.manage?h('div',{class:'row',style:'justify-content:center'},
-        h('button',{class:'btn primary',type:'button',onclick:createPreset},icon('plus'),'Bruk HSM 241-bøkene (VNV 19, DF 15)'),
-        h('button',{class:'btn',type:'button',onclick:()=>openBooksModal()},'Legg til andre bøker')):
-        h('p',{class:'note'},'Be ein redaktør eller eigar om å leggje inn bøkene.'));
+    return plantBtn(p.write);
   }
   const f=st.total?st.done/st.total:0;
   const scene=skogScene(st);
@@ -3149,7 +3151,7 @@ const CSAY={
  ape:['Visste du at bananar eigentleg er bær? Jordbær er det ikkje. Eg er framleis forvirra.',
   'Ein flokk apar kallast ein tropp. Troupers. Eg er sjølvsagt leiaren.','Eg trykte på ein knapp i går. Ingen veit kva han gjorde. Eg heller ikkje.',
   'Eg tok ein bit av kalenderen din. Smakar tysdag.','Psst. Skal me finne på noko gale? Eg tenkte på noko med bananar.','Eg har gøymt ein banan ein stad på nettsida. Berre ein hint: han er gul.'],
- gress:['Eg hoppar 20 gongar kroppslengda mi. Kva har DU gjort i dag?','Eg høyrer med magen. Det forklarar kvifor eg ikkje høyrer på deg.',
+ gress:['Hei der, du. Ja, du. Du ser bra ut i dag. Ikkje la det stige deg til hovudet.','Eg hoppar 20 gongar kroppslengda mi. Imponert? Det burde du vere. 😉','Hallo. Eg la merke til at du har vore her ei stund. Eg klaga ikkje.','Eg hoppar 20 gongar kroppslengda mi. Kva har DU gjort i dag?','Eg høyrer med magen. Det forklarar kvifor eg ikkje høyrer på deg.',
   'Ja, ja, eg ser deg scrolle. Gjer noko nyttig, då.','Eg syng ved å gni beina mot vengene. Og ja, eg er betre enn du.','Gresshopper har hoppa sidan lenge før du kunne skrive. Berre så du veit det.','Fint design. Nesten. Du får ein firar.'],
  royskatt:['Du har gjort meir enn du trur. Verkeleg.','Små steg tel òg. Berre ta det neste.','Hugs å drikke vatn og strekke på nakken. Du fortener det.',
   'Røyskattar blir kvite om vinteren, berre halespissen er svart. Smart, ikkje sant? Du også, forresten.','Ein ting om gongen. Du klarer dette.','Eg trur på deg. Og eg er ganske god på å tru på folk.'],
@@ -3162,7 +3164,7 @@ const CQ={
  pinnsvin:[{q:'Eple eller sopp?',a:['Eple','Sopp'],r:['Eple. Eg er enig. Men ikkje ta pigg-testen.','Sopp! Eg samlar dei på ryggen. Det er praktisk.']}],
  ugle:[{q:'Morgonfugl eller nattugle?',a:['Morgon','Natt'],r:['Hm. Då er du vel vaken no. Eg legg meg snart.','Ein av oss! Uhu. Men sov litt òg.']}],
  ape:[{q:'Raskt spørsmål: blå eller lilla?',a:['Blå','Lilla'],act:'farge'},{q:'Banan eller eple?',a:['Banan','Eple'],r:['Rett svar. Du får ein bananhandtrykk.','Eple?! Eg må sitte ned.']}],
- gress:[{q:'Er du ferdig med det du skulle i dag?',a:['Ja','Nei'],r:['Imponerande. Nesten.','Det trudde eg. Opp og hopp, då.']},{q:'Blå eller lilla?',a:['Blå','Lilla'],act:'farge'}],
+ gress:[{q:'Ser du på kalenderen, eller på meg?',a:['Kalenderen','Deg'],r:['Aua. Ærleg, men aua. Eg skal tenke på det.','Eg visste det. Ikkje rød i andletet no. 😏']},{q:'Er du ferdig med det du skulle i dag?',a:['Ja','Nei'],r:['Imponerande. Nesten.','Det trudde eg. Opp og hopp, då.']},{q:'Blå eller lilla?',a:['Blå','Lilla'],act:'farge'}],
  royskatt:[{q:'Korleis har dagen vore?',a:['Strålande','Heilt ok','Tung'],r:['Så bra! Ta med deg den kjensla vidare.','Heilt ok er heilt greitt. Du gjer det bra.','Ta det med ro. Gjer éin liten ting, så er det nok for no. Eg er her.']},{q:'Kaffe eller te?',a:['Kaffe','Te'],r:['Kaffe, mot! Ikkje gløym vatn òg.','Te, klokt val. Kos deg.']}]
 };
 const CEVT={ape:['Banantørking','Klatrekonkurranse i stua','Møte med ei kokosnøtt','Kosetime med bananskal','Viktig: ape rundt'],
