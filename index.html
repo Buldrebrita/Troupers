@@ -304,6 +304,8 @@ button.crumb:not(:disabled):hover{background:var(--surface-2);text-decoration:un
 .dhb{border:0;background:none;text-align:left;padding:0;color:var(--muted);font:inherit}.dhb:hover{color:var(--ink);text-decoration:underline}
 .di.isdir .link-t{font-weight:700}
 .di.dr:not(.dh):hover{background:color-mix(in srgb,var(--y,#FFE58A) 22%,var(--surface))}
+.trnick{font:400 9.5px var(--f-body);fill:var(--ink);opacity:.5;pointer-events:none;paint-order:stroke;stroke:var(--bg);stroke-width:2.5px;stroke-linejoin:round}
+.nk-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}.nk-box summary{cursor:pointer;color:var(--muted)}
 .goal-list{display:flex;flex-direction:column;gap:14px}.goal-list>.goal{touch-action:pan-y}
 .lift{transform:scale(1.03);box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:5;opacity:.92;cursor:grabbing;position:relative}
 .dl.reord{user-select:none;-webkit-user-select:none}
@@ -2177,10 +2179,14 @@ function openGoalModal(x){
   const short=kind==='goal'?h('input',{class:'inp',maxlength:'18',value:x.short||'',placeholder:'T.d. VNV (står på skiltet i skogen)','aria-label':'Forkorting'}):null;
   const forest=kind==='goal'?h('input',{type:'checkbox',checked:x.forest!==false}):null;
   const spSel=h('select',{class:'sp-sel','aria-label':'Treslag'},h('option',{value:''},kind==='sub'?'Som målet':'Automatisk'),Object.keys(SPECIES).map(k=>h('option',{value:k},SPECIES[k])));spSel.value=SPECIES[x.species]?x.species:'';
+  const nickIn={};const nickBox=kind==='goal'?h('details',{class:'nk-box'},h('summary',null,'Kallenamn på trea i dette målet'),
+    h('p',{class:'note'},'Gjeld berre dette målet. Namnet står smått og diskret under treet i skogen.'),
+    h('div',{class:'nk-grid'},['lauv','kirsebaer','bjork','gran'].map(k=>{const i=h('input',{class:'inp',maxlength:'24',value:(x.nick&&x.nick[k])||'',placeholder:SPECIES[k],'aria-label':'Kallenamn for '+SPECIES[k]});nickIn[k]=i;return h('label',{class:'lbl'},SPECIES[k],i);}))):null;
+  if(nickBox&&x.nick&&Object.values(x.nick).some(Boolean))nickBox.open=true;
   const coll=kind==='sub'?col('subgoals'):gcol(x);
   const f=h('form',{class:'form',onsubmit:async e=>{e.preventDefault();const v=title.value.trim();if(!v){title.focus();return;}
     const data={title:v,due:due.value||'',assignee:who?who.value:'',species:spSel.value};
-    if(kind==='goal'){data.short=short.value.trim();data.forest=forest.checked;}
+    if(kind==='goal'){data.short=short.value.trim();data.forest=forest.checked;const nk={};Object.keys(nickIn).forEach(k=>{const v=nickIn[k].value.trim();if(v)nk[k]=v;});data.nick=nk;}
     try{
       if(isNew){const n=Date.now();Object.assign(data,{done:false,order:n,createdBy:S.uid,createdAt:n});if(kind==='sub'){data.goal=x.goal;if(!data.assignee){const g=goalsArr().find(q=>q.id===x.goal);if(g&&g.assignee)data.assignee=g.assignee;}}await coll.add(data);}
       else{
@@ -2196,6 +2202,7 @@ function openGoalModal(x){
     short?h('label',{class:'lbl'},'Forkorting til skiltet',short):null,
     forest?h('label',{class:'row',style:'gap:8px'},forest,'Skog for målet'):null,
     h('label',{class:'lbl'},kind==='sub'?'Treslag for dette delmålet':'Treslag',spSel),
+    nickBox,
     isNew?null:h('label',{class:'row',style:'gap:8px'},done,'Ferdig'),
     h('div',{class:'row'},
       (!isNew&&canDel(x))?h('button',{class:'btn danger',type:'button',style:'margin-right:auto',onclick:async()=>{
@@ -2962,7 +2969,7 @@ const SPECIES={lauv:'Lauvtre',gran:'Gran',kirsebaer:'Kirsebærtre',bjork:'Bjørk
 const SP_COL={lauv:'#8ED08F',gran:'#5FB083',kirsebaer:'#FFB6CB',bjork:'#CFEB8E'};
 function bkEff(){const o=Object.assign({},S.data.books);
   goalsArr().forEach((g,i)=>{if(g.forest===false)return;const subs=subsOf(g.id);const t=String(g.title||'Mål');
-    o['g_'+g.id]={title:t,short:g.short||(t.length>18?t.slice(0,17)+'…':t),chapters:Math.max(1,subs.length),species:(SPECIES[g.species]?g.species:['lauv','kirsebaer','bjork','gran'][i%4]),order:1000+i,goal:true,goalSelf:!subs.length,gid:g.id,subs:subs.map(x=>x.id)};});
+    o['g_'+g.id]={title:t,short:g.short||(t.length>18?t.slice(0,17)+'…':t),chapters:Math.max(1,subs.length),species:(SPECIES[g.species]?g.species:['lauv','kirsebaer','bjork','gran'][i%4]),order:1000+i,goal:true,nick:(g.nick&&typeof g.nick==='object')?g.nick:{},goalSelf:!subs.length,gid:g.id,subs:subs.map(x=>x.id)};});
   return o;}
 function chEff(){const o=Object.assign({},S.data.chapters);
   goalsArr().forEach(g=>{if(g.forest===false)return;const subs=subsOf(g.id);if(!subs.length){if(g.done)o[chKey('g_'+g.id,1)]={book:'g_'+g.id,n:1,by:g.doneBy||'',at:g.doneAt||0};return;}
@@ -3110,7 +3117,8 @@ function forestSvg(st){
         '<text y="-10" class="sn">'+sl.n+'</text><rect x="-22" y="-30" width="44" height="36" fill="transparent"/>';
     }
     if(sk.sel===sl.key)inner+='<ellipse cx="0" cy="2" rx="30" ry="8" class="selr"/>';
-    parts.push('<g class="slot'+(done?' done':'')+'" data-bid="'+esc(sl.bid)+'" data-n="'+sl.n+'" tabindex="0" role="button" aria-label="'+label+'" transform="translate('+sl.x.toFixed(1)+' '+sl.y.toFixed(1)+') scale('+(sl.s*(done?sl.fl:1)).toFixed(3)+' '+sl.s.toFixed(3)+') rotate('+(done?sl.tilt:0).toFixed(1)+')">'+inner+'</g>');
+    const nk=done&&sl.book.nick&&sl.book.nick[sp];
+    parts.push('<g class="slot'+(done?' done':'')+'" data-bid="'+esc(sl.bid)+'" data-n="'+sl.n+'" tabindex="0" role="button" aria-label="'+label+'" transform="translate('+sl.x.toFixed(1)+' '+sl.y.toFixed(1)+') scale('+(sl.s*(done?sl.fl:1)).toFixed(3)+' '+sl.s.toFixed(3)+') rotate('+(done?sl.tilt:0).toFixed(1)+')">'+inner+'</g>'+(nk?'<text class="trnick" x="'+sl.x.toFixed(1)+'" y="'+(sl.y+11*sl.s+5).toFixed(1)+'" text-anchor="middle">'+esc(String(nk).slice(0,24))+'</text>':''));
   });
   parts.push(critForest());
   lay.signs.forEach(sg=>{
