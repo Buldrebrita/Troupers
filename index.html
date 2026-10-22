@@ -2888,7 +2888,11 @@ function openEmbed(it){
   const href=safeUrl(it.url);if(!href){toast('Ugyldig adresse.','bad');return;}
   const src=embedUrl(href);
   let fr=null;
-  const v=fvOpen(it.title||'Lenke',{presentable:true,actions:[h('button',{class:'btn sm',type:'button',title:'Last inn nyaste versjon frå lenka',onclick:()=>{if(fr){const u=fr.src;fr.src='about:blank';setTimeout(()=>{fr.src=u;},80);toast('Lastar inn nyaste versjon …');}}},'↻ Synk'),h('a',{class:'btn sm',href,target:'_blank',rel:'noopener noreferrer'},'Opne i ny fane')]});
+  const gm=(()=>{try{const x=new URL(href);return x.hostname==='docs.google.com'&&x.pathname.match(/^\/(document|spreadsheets)\/d\/([^/]+)/);}catch(_){return null;}})();
+  let fullMode=false;
+  const fullBtn=gm?h('button',{class:'btn sm',type:'button',title:'Vis Google sin fulle verktøylinje (om Google tillèt det her)',onclick:e=>{fullMode=!fullMode;
+      fr.src=fullMode?'https://docs.google.com/'+gm[1]+'/d/'+gm[2]+'/edit':embedUrl(href);e.currentTarget.textContent=fullMode?'Enkel visning':'Full verktøylinje';}},'Full verktøylinje'):null;
+  const v=fvOpen(it.title||'Lenke',{presentable:true,actions:[fullBtn,h('button',{class:'btn sm',type:'button',title:'Last inn nyaste versjon frå lenka',onclick:()=>{if(fr){const u=fr.src;fr.src='about:blank';setTimeout(()=>{fr.src=u;},80);toast('Lastar inn nyaste versjon …');}}},'↻ Synk'),h('a',{class:'btn sm',href,target:'_blank',rel:'noopener noreferrer'},'Opne i ny fane')]});
   fr=h('iframe',{src,title:it.title||'Lenke',class:'fv-fr',allow:'fullscreen; autoplay; clipboard-write',allowfullscreen:true});
   const isCv=/(^|\.)canva\.(com|link)$/.test((()=>{try{return new URL(href).hostname;}catch(_){return '';}})());
   v.stage.append(fr,h('p',{class:'fv-note'},isCv?'Viser ikkje Canva-presentasjonen? Trykk Del → «Vis»-lenke i Canva, sørg for at alle med lenka kan sjå, og legg inn den lenka (ikkje canva.link). Eller bruk «Opne i ny fane».':'Viser ikkje sida seg? Då blokkerer nettstaden innbygging. Bruk «Opne i ny fane».'));
