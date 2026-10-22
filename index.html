@@ -2,8 +2,8 @@
 <html lang="nn"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect x='3' y='3' width='58' height='58' rx='16' fill='%23FFE58A' stroke='%23252A31' stroke-width='4'/><circle cx='25' cy='33' r='13' fill='%23FFB6CB' stroke='%23252A31' stroke-width='4'/><circle cx='40' cy='33' r='13' fill='%23C3B2F0' fill-opacity='.9' stroke='%23252A31' stroke-width='4'/></svg>">
-<meta name="theme-color" content="#FFE58A">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect x='4' y='4' width='56' height='56' rx='14' fill='%23FFFFFF' stroke='%23252A31' stroke-width='5'/><path d='M29 52V38h6v14z' fill='%23B07A4A' stroke='%23252A31' stroke-width='3' stroke-linejoin='round'/><circle cx='22' cy='33' r='9' fill='%238ED08F' stroke='%23252A31' stroke-width='3'/><circle cx='42' cy='33' r='9' fill='%238ED08F' stroke='%23252A31' stroke-width='3'/><circle cx='32' cy='23' r='11' fill='%23A8E0A0' stroke='%23252A31' stroke-width='3'/></svg>">
+<meta name="theme-color" content="#A8E0A0">
 <title>Troupers</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -1420,7 +1420,7 @@ function setTab(t){if(S.openDoc&&t!=='dokument')closeDocument(true);if(S.openDoc
 
 /* ---------- sidekolonne, topp, faner ---------- */
 function logo(){const s=document.createElement('span');s.className='ic';
-  s.innerHTML='<svg viewBox="0 0 34 26" width="34" height="26" aria-hidden="true"><circle cx="11" cy="13" r="9" style="fill:var(--bl);stroke:var(--edge)" stroke-width="2.4"/><circle cx="22" cy="13" r="9" style="fill:var(--pk);stroke:var(--edge)" stroke-width="2.4"/></svg>';return s;}
+  s.innerHTML='<svg viewBox="0 0 64 64" width="28" height="28" aria-hidden="true"><rect x="4" y="4" width="56" height="56" rx="14" style="fill:var(--surface);stroke:var(--edge)" stroke-width="5"/><path d="M29 52V38h6v14z" fill="#B07A4A" style="stroke:var(--edge)" stroke-width="3" stroke-linejoin="round"/><circle cx="22" cy="33" r="9" fill="#8ED08F" style="stroke:var(--edge)" stroke-width="3"/><circle cx="42" cy="33" r="9" fill="#8ED08F" style="stroke:var(--edge)" stroke-width="3"/><circle cx="32" cy="23" r="11" fill="#A8E0A0" style="stroke:var(--edge)" stroke-width="3"/></svg>';return s;}
 const RECENT_N=4;
 function recentIds(){let a=[];try{a=JSON.parse(localStorage.getItem('troupers.recent'))||[];}catch(_){}return Array.isArray(a)?a:[];}
 function noteRecent(id){try{localStorage.setItem('troupers.recent',JSON.stringify([id].concat(recentIds().filter(x=>x!==id)).slice(0,20)));}catch(_){}}
