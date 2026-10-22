@@ -2880,7 +2880,7 @@ function embedUrl(u){
       if(mm&&mm[2]&&mm[2]!=='view'&&mm[2]!=='edit'&&mm[2]!=='watch')return 'https://www.canva.com/design/'+mm[1]+'/'+mm[2]+'/view?embed';
       if(mm)return 'https://www.canva.com/design/'+mm[1]+'/view?embed';}
     if(/docs\.google\.com$/.test(x.hostname)){const g=x.pathname.match(/^\/(document|spreadsheets)\/d\/([^/]+)/);
-      if(g)return 'https://docs.google.com/'+g[1]+'/d/'+g[2]+'/edit?rm=minimal&embedded=true';}
+      if(g)return 'https://docs.google.com/'+g[1]+'/d/'+g[2]+'/edit?embedded=true&rm=full';}
     if(/docs\.google\.com$/.test(x.hostname)&&/\/presentation\//.test(x.pathname))return u.replace(/\/(edit|pub|view)[^/]*$/,'/embed').replace(/\/embed$/,'/embed?start=false&loop=false');
     return u;}catch(_){return u;}
 }
