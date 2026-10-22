@@ -868,6 +868,11 @@ input[type=checkbox]:focus-visible{outline:3px solid var(--accent);outline-offse
 .td.drag{opacity:.4}.td.is-done .tl{text-decoration:line-through;color:var(--muted)}
 .td .t{flex:1;min-width:0}
 .pr{width:10px;height:10px;border-radius:50%;display:inline-block;border:1.5px solid var(--edge)}.pr-high{background:var(--rose)}.pr-mid{background:var(--y)}.pr-low{background:var(--gr)}
+.tdf-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.tdf-bar .tdf{max-width:200px;padding:6px 8px}
+.td-sec{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.td-sh{display:flex;align-items:center;gap:8px;border-bottom:2px solid var(--edge,var(--line));padding-bottom:4px}
+.td-sh h3{margin:0;display:flex;align-items:center;gap:8px;font:400 22px var(--f-display)}
+.td-sh .n{font:500 12px var(--f-mono);background:var(--surface-2);border-radius:20px;padding:2px 8px;color:var(--muted)}
 .td-list{display:flex;flex-direction:column;gap:8px;max-width:760px}.td-done summary{cursor:pointer;color:var(--muted);margin:6px 0}
 .kb{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(240px,1fr);gap:12px;overflow-x:auto;align-items:start;padding-bottom:8px}
 .kb-c{border:2px dashed var(--edge);border-radius:var(--wob);background:color-mix(in srgb,var(--surface-2) 60%,transparent);padding:8px;min-height:120px}
@@ -1356,7 +1361,7 @@ function subscribeSpace(){
 }
 function switchSpace(id){
   closeDocument(true);unsubscribeSpace();
-  S.active=id;S.tab='oversikt';S.openDoc=null;S.editing=null;S.q='';S.itemFilter='alle';DD.dir='';
+  S.active=id;S.tab='oversikt';S.openDoc=null;S.editing=null;S.q='';S.itemFilter='alle';DD.dir='';TDF.who='';TDF.when='';
   S.data={members:{},events:{},tasks:{},items:{},books:{},chapters:{},goals:{},subgoals:{},messages:{},notifs:{},todos:{},activity:{}};S.loaded={};
   try{localStorage.setItem('samlag.last',id);}catch(_){}
   if(id!==PRIV)noteRecent(id);
@@ -1938,12 +1943,44 @@ const TD_PR=[['high','Høg'],['mid','Middels'],['low','Låg']];
 const TD_VIEWS=[['liste','Liste','list'],['kanban','Kanban','target'],['prio','Prioritet','bell'],['person','Per person','users']];
 const tdView=()=>{let v='kanban';try{v=localStorage.getItem('troupers.todoview')||'kanban';}catch(_){}return TD_VIEWS.some(x=>x[0]===v)?v:'kanban';};
 function todosArr(){
-  const real=Object.entries(S.data.todos||{}).map(([id,x])=>Object.assign({status:'todo',prio:'mid'},x,{id}));
+  const real=Object.entries(S.data.todos||{}).filter(([id,x])=>x&&x.kind!=='head').map(([id,x])=>Object.assign({status:'todo',prio:'mid'},x,{id}));
   const virt=Object.entries(S.data.subgoals||{}).filter(([id,x])=>x&&x.todo).map(([id,x])=>({id:'sg_'+id,_sub:Object.assign({id},x),title:x.title,status:x.done?'done':(x.tdStatus==='doing'?'doing':'todo'),prio:x.tdPrio||'mid',due:x.due||'',assignee:x.assignee||'',order:x.createdAt||0,createdAt:x.createdAt||0,createdBy:x.createdBy}));
   return real.concat(virt).sort((a,b)=>(a.order||a.createdAt||0)-(b.order||b.createdAt||0));}
+function tdHeads(){return Object.entries(S.data.todos||{}).filter(([id,x])=>x&&x.kind==='head').map(([id,x])=>Object.assign({id},x)).sort((a,b)=>(a.order||a.createdAt||0)-(b.order||b.createdAt||0));}
+S.ui=S.ui||{};
+const TDF={who:'',when:''};
+const TD_WHEN=[['','Alle datoar'],['late','Forfalt'],['today','I dag'],['week','Neste 7 dagar'],['month','Neste 30 dagar'],['none','Utan frist']];
+function tdFilter(list){
+  const t=todayS();
+  return list.filter(x=>{
+    if(TDF.who==='_none'){if(x.assignee)return false;}else if(TDF.who&&x.assignee!==TDF.who)return false;
+    switch(TDF.when){
+      case 'late':return !!x.due&&x.due<t&&x.status!=='done';
+      case 'today':return x.due===t;
+      case 'week':return !!x.due&&x.due>=t&&x.due<=addDays(t,6);
+      case 'month':return !!x.due&&x.due>=t&&x.due<=addDays(t,29);
+      case 'none':return !x.due;
+    }return true;});
+}
+function newTodoList(){
+  const inp=h('input',{class:'inp',maxlength:'80',placeholder:'T.d. Innkjøp',required:true});
+  openModal('Ny liste',h('form',{class:'form',onsubmit:async e=>{e.preventDefault();const v=inp.value.trim();if(!v)return;const n=Date.now();
+      try{await col('todos').add({kind:'head',title:v,order:n,createdBy:S.uid,createdAt:n});closeModal();}catch(er){fail(er);}}},
+    inp,h('div',{class:'row end'},h('button',{class:'btn',type:'button',onclick:closeModal},'Avbryt'),h('button',{class:'btn primary',type:'submit'},'Lag liste'))));
+}
+function renameTodoList(hd){
+  const inp=h('input',{class:'inp',maxlength:'80',value:hd.title||'',required:true});
+  openModal('Gi nytt namn',h('form',{class:'form',onsubmit:async e=>{e.preventDefault();const v=inp.value.trim();if(!v)return;
+      try{await col('todos').doc(hd.id).update({title:v});closeModal();}catch(er){fail(er);}}},
+    inp,h('div',{class:'row end'},h('button',{class:'btn',type:'button',onclick:closeModal},'Avbryt'),h('button',{class:'btn primary',type:'submit'},'Lagre'))));
+}
+async function delTodoList(hd){
+  if(!(await confirmBox('Slette lista «'+hd.title+'»?','Oppgåvene blir ikkje sletta, dei flyttar til «Utan liste».','Slett liste')))return;
+  try{for(const [id,x] of Object.entries(S.data.todos||{}))if(x.grp===hd.id)await col('todos').doc(id).update({grp:''});await col('todos').doc(hd.id).delete();}catch(e){fail(e);}
+}
 async function addTodo(inp,due,who){
   const t=inp.value.trim();if(!t){inp.focus();return;}
-  try{const n=Date.now();await col('todos').add({title:t,status:'todo',prio:'mid',due:due||'',assignee:who||'',order:n,createdBy:S.uid,createdAt:n});
+  try{const n=Date.now();await col('todos').add({title:t,status:'todo',prio:'mid',grp:(typeof S.ui.tform==='string'?S.ui.tform:''),due:due||'',assignee:who||'',order:n,createdBy:S.uid,createdAt:n});
     if(who&&who!==S.uid)sendNotif(S.active,who,'tildelt','«'+t+'» er tildelt deg','todo');
     logAct('todo','la inn to-do «'+t+'»','todo');S.ui.tform=false;renderView();}catch(e){fail(e);}
 }
@@ -1966,12 +2003,13 @@ function openTodoModal(x){
   const pr=h('select',{class:'inp'},TD_PR.map(([k,l])=>h('option',{value:k},l)));pr.value=x.prio;
   const due=h('input',{class:'inp',type:'date',value:x.due||''});
   const who=S.active!==PRIV?memberSelect('td-who',x.assignee,true):null;
+  const heads=tdHeads();const grp=(!x._sub&&heads.length)?h('select',{class:'inp'},h('option',{value:''},'Utan liste'),heads.map(g=>h('option',{value:g.id},g.title))):null;if(grp)grp.value=heads.some(g=>g.id===x.grp)?x.grp:'';
   const f=h('form',{class:'form',onsubmit:async e=>{e.preventDefault();const v=title.value.trim();if(!v){title.focus();return;}
     const nw=who?who.value:'';
-    await tdSet(x,{title:v,status:st.value,prio:pr.value,due:due.value||'',assignee:nw});
+    await tdSet(x,Object.assign({title:v,status:st.value,prio:pr.value,due:due.value||'',assignee:nw},grp?{grp:grp.value}:{}));
     if(nw&&nw!==x.assignee&&nw!==S.uid)sendNotif(S.active,nw,'tildelt','«'+v+'» er tildelt deg','todo');
     closeModal();renderView();}},
-    title,h('div',{class:'row',style:'gap:10px;flex-wrap:wrap'},h('label',{class:'lbl'},'Status',st),h('label',{class:'lbl'},'Prioritet',pr),h('label',{class:'lbl'},'Frist',due),who?h('label',{class:'lbl'},'Ansvarleg',who):null),
+    title,h('div',{class:'row',style:'gap:10px;flex-wrap:wrap'},h('label',{class:'lbl'},'Status',st),h('label',{class:'lbl'},'Prioritet',pr),h('label',{class:'lbl'},'Frist',due),who?h('label',{class:'lbl'},'Ansvarleg',who):null,grp?h('label',{class:'lbl'},'Liste',grp):null),
     h('div',{class:'row'},x._sub?h('button',{class:'btn',type:'button',style:'margin-right:auto',onclick:async()=>{closeModal();await setSubTodo(x._sub,false);}},'Fjern frå To-do'):canDel(x)?h('button',{class:'btn danger',type:'button',style:'margin-right:auto',onclick:async()=>{closeModal();try{await col('todos').doc(x.id).delete();}catch(er){fail(er);}}},icon('trash'),'Slett'):h('span',{style:'margin-right:auto'}),
       h('button',{class:'btn',type:'button',onclick:closeModal},'Avbryt'),h('button',{class:'btn primary',type:'submit'},'Lagre')));
   openModal('To-do',f);hydrate(S.modal);
@@ -1996,19 +2034,48 @@ function tdColumns(view,list){
 function viewTodo(){
   const p=perm();
   if(!S.loaded.todos)return h('p',{class:'muted'},'Lastar …');
-  const view=tdView();const list=todosArr();
+  const view=tdView();const all=todosArr();const list=tdFilter(all);
+  const filtered=!!(TDF.who||TDF.when);
   const seg=h('div',{class:'seg',role:'group','aria-label':'Visning'},TD_VIEWS.filter(v=>v[0]!=='person'||S.active!==PRIV).map(([k,l])=>
     h('button',{type:'button','aria-pressed':String(view===k),onclick:()=>{try{localStorage.setItem('troupers.todoview',k);}catch(_){}renderView();}},l)));
   const head=h('div',{class:'mal-h'},h('h2',null,hb('check','teal'),'To-do'),seg);
-  const addBox=!p.write?null:S.ui.tform
-    ?h('div',{class:'mk-box'},formRow('tf','Kva skal gjerast?',addTodo,()=>{S.ui.tform=false;renderView();}))
-    :h('div',null,h('button',{class:'btn',type:'button',onclick:()=>{S.ui.tform=true;renderView();setTimeout(()=>{const e=document.getElementById('tf-t');if(e)e.focus();},30);}},icon('plus'),'To-do'));
+  // filter
+  const whoSel=S.active!==PRIV?(()=>{const sel=h('select',{class:'inp tdf','aria-label':'Filtrer på person',onchange:e=>{TDF.who=e.target.value;renderView();}},
+      h('option',{value:''},'Alle personar'),h('option',{value:'_none'},'Ingen ansvarleg'),
+      Object.keys(S.data.members).sort((a,b)=>(a===S.uid?-1:b===S.uid?1:0)).map(u=>h('option',{value:u,dataset:{uid:u,me:'1'}},'…')));sel.value=TDF.who;return sel;})():null;
+  const whenSel=h('div',{class:'chips-f',role:'group','aria-label':'Filtrer på tid'},TD_WHEN.map(([k,l])=>h('button',{class:'fc',type:'button','aria-pressed':String(TDF.when===k),onclick:()=>{TDF.when=k;renderView();}},l)));
+  const fbar=h('div',{class:'tdf-bar'},whoSel,whenSel,filtered?h('button',{class:'btn ghost sm',type:'button',onclick:()=>{TDF.who='';TDF.when='';renderView();}},icon('x',14),'Fjern filter'):null,
+    filtered?h('span',{class:'muted',style:'font-size:13px'},list.length+' av '+all.length):null);
+  const mkForm=gid=>h('div',{class:'mk-box'},formRow('tf','Kva skal gjerast?',addTodo,()=>{S.ui.tform=false;renderView();}));
+  const openForm=gid=>{S.ui.tform=gid;renderView();setTimeout(()=>{const e=document.getElementById('tf-t');if(e)e.focus();},30);};
+  const addBox=!p.write?null:S.ui.tform===true
+    ?mkForm()
+    :h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>openForm(true)},icon('plus'),'To-do'),
+      view==='liste'?h('button',{class:'btn',type:'button',onclick:newTodoList},icon('list',16),'Ny liste'):null);
   let body;
   if(view==='liste'){
-    const open=list.filter(x=>x.status!=='done').sort((a,b)=>(a.due||'9').localeCompare(b.due||'9')||(a.createdAt||0)-(b.createdAt||0));
-    const done=list.filter(x=>x.status==='done');
-    body=h('div',{class:'td-list'},open.length?open.map(x=>tdCard(x,p)):h('p',{class:'empty'},'Ingenting å gjere. Fint!'),
-      done.length?h('details',{class:'td-done'},h('summary',null,'Ferdige ('+done.length+')'),done.map(x=>tdCard(x,p))):null);
+    const byDue=(a,b)=>(a.due||'9').localeCompare(b.due||'9')||(a.createdAt||0)-(b.createdAt||0);
+    const openOf=arr=>arr.filter(x=>x.status!=='done').sort(byDue);
+    const sec=(key,title,items,hd,goalName)=>{
+      const open=openOf(items),done=items.filter(x=>x.status==='done');
+      const hasForm=hd&&S.ui.tform===hd.id;
+      const el=h('section',{class:'td-sec'},
+        h('div',{class:'td-sh'},h('h3',null,goalName?icon('target',16):icon('list',16),title,h('span',{class:'n'},String(open.length))),
+          hd&&p.write?h('span',{class:'row',style:'gap:2px;margin-left:auto'},
+            h('button',{class:'icon-btn',type:'button','aria-label':'Ny oppgåve i lista',title:'Ny oppgåve i lista',onclick:()=>openForm(hd.id)},icon('plus',16)),
+            h('button',{class:'icon-btn',type:'button','aria-label':'Gi nytt namn',title:'Gi nytt namn',onclick:()=>renameTodoList(hd)},icon('edit',16)),
+            canDel(hd)?h('button',{class:'icon-btn bad',type:'button','aria-label':'Slett lista',title:'Slett lista',onclick:()=>delTodoList(hd)},icon('trash',16)):null):null),
+        hasForm?mkForm():null,
+        open.length?open.map(x=>tdCard(x,p)):(hasForm?null:h('p',{class:'empty'},filtered?'Ingen treff i lista.':'Tom liste.')),
+        done.length?h('details',{class:'td-done'},h('summary',null,'Ferdige ('+done.length+')'),done.map(x=>tdCard(x,p))):null);
+      return el;};
+    const heads=tdHeads();const secs=[];
+    const plain=list.filter(x=>!x._sub&&!heads.some(g=>g.id===x.grp));
+    if(plain.length||(!heads.length&&!list.some(x=>x._sub)))secs.push(sec('_plain',heads.length?'Utan liste':'Oppgåver',plain,null,false));
+    heads.forEach(g=>{const its=list.filter(x=>!x._sub&&x.grp===g.id);if(its.length||!filtered)secs.push(sec(g.id,g.title,its,g,false));});
+    const gids=[];list.filter(x=>x._sub).forEach(x=>{if(gids.indexOf(x._sub.goal)<0)gids.push(x._sub.goal);});
+    gids.forEach(gid=>{const g=goalsArr().find(q=>q.id===gid);secs.push(sec('g'+gid,g?g.title:'Mål',list.filter(x=>x._sub&&x._sub.goal===gid),null,true));});
+    body=h('div',{class:'td-list'},secs);
   }else{
     const cols=tdColumns(view,list);
     body=h('div',{class:'kb'},cols.map(c=>{
@@ -2019,7 +2086,7 @@ function viewTodo(){
         col_.addEventListener('drop',e=>{e.preventDefault();col_.classList.remove('over');const id=e.dataTransfer.getData('text/plain');const x=list.find(y=>y.id===id);if(x)tdSet(x,c.patch);});}
       return col_;}));
   }
-  const el=h('div',{class:'ov-wrap'},head,addBox,body);hydrate(el);return el;
+  const el=h('div',{class:'ov-wrap'},head,fbar,addBox,body);hydrate(el);return el;
 }
 function logAct(type,text,tab){
   if(S.active===PRIV)return;
