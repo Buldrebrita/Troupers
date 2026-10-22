@@ -2996,7 +2996,8 @@ function forestLayout(books){
     const rad=Math.sqrt(w*(bottom-top)/n)*.6;const rnd=rng('lay-'+b.id);const pts=[];
     for(let i=0;i<n;i++){let pl=null;
       for(let t=0;t<60&&!pl;t++){const r=rad*(1-t*.013);const x=x0+16+rnd()*Math.max(1,w-32),y=top+rnd()*(bottom-top);
-        if(pts.every(p=>Math.hypot(p.x-x,(p.y-y)*1.7)>=r))pl={x,y};}
+        const xm=Math.min(38,rad*.7)*(1-t*.013);
+        if(pts.every(p=>Math.hypot(p.x-x,(p.y-y)*1.7)>=r&&(Math.abs(p.x-x)>=xm||Math.abs(p.y-y)>=96)))pl={x,y};}
       if(!pl)pl={x:x0+16+rnd()*Math.max(1,w-32),y:top+rnd()*(bottom-top)};
       pts.push(pl);
       const r2=rng(b.id+'-v'+(i+1));const depth=(pl.y-top)/(bottom-top);
@@ -3092,9 +3093,9 @@ function forestSvg(st){
     for(let i=0;i<6;i++)R();
     parts.push('<g opacity="1">'+bu+'</g>');}
   // gras og blomar
-  let gr='';for(let i=0;i<34;i++){const x=20+R()*960,y=232+R()*190;gr+='<path d="M'+x.toFixed(0)+' '+y.toFixed(0)+'q2-9 4 0q2-9 4 0q2-9 4 0" class="o2"/>';}
+  let gr='';for(let i=0;i<24;i++){const x=20+R()*960,y=232+R()*190;gr+='<path d="M'+x.toFixed(0)+' '+y.toFixed(0)+'q2-9 4 0q2-9 4 0q2-9 4 0" class="o2"/>';}
   parts.push('<g opacity=".55">'+gr+'</g>');
-  {const n=Math.round(52+60*f);const fc=['#FF9EB5','#FFE58A','#FFFFFF','#C3B2F0','#FFC48A'];let fl='';
+  {const n=Math.round(24+28*f);const fc=['#FF9EB5','#FFE58A','#FFFFFF','#C3B2F0','#FFC48A'];let fl='';
     for(let i=0;i<n;i++){const x=20+R()*960,y=236+R()*180,c=fc[Math.floor(R()*fc.length)],k=Math.floor(R()*3),z=.8+R()*.5;
       const dk=mixc(c,'#8A2A55',.3);let hd;
       if(k===0)hd=[0,72,144,216,288].map(a=>'<ellipse cx="0" cy="-5" rx="2.6" ry="3.6" fill="'+c+'" class="o" style="stroke-width:.9" transform="rotate('+a+' 0 -2)"/>').join('')+'<circle cx="0" cy="-2" r="2.3" fill="#F2B032" class="o" style="stroke-width:.9"/>';
