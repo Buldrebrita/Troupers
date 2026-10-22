@@ -304,6 +304,7 @@ button.crumb:not(:disabled):hover{background:var(--surface-2);text-decoration:un
 .dhb{border:0;background:none;text-align:left;padding:0;color:var(--muted);font:inherit}.dhb:hover{color:var(--ink);text-decoration:underline}
 .di.isdir .link-t{font-weight:700}
 .di.dr:not(.dh):hover{background:color-mix(in srgb,var(--y,#FFE58A) 22%,var(--surface))}
+.goal-list{display:flex;flex-direction:column;gap:14px}.goal-list>.goal{touch-action:pan-y}
 .lift{transform:scale(1.03);box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:5;opacity:.92;cursor:grabbing;position:relative}
 .dl.reord{user-select:none;-webkit-user-select:none}
 .dc .th.pv,.dc .th.pv[class*="tone-"]{align-items:flex-start;justify-content:flex-start;background:var(--surface);overflow:hidden}
@@ -2246,6 +2247,18 @@ function spSelect(cur,auto,fn,label){
   const sel=h('select',{class:'sp-sel','aria-label':label},h('option',{value:''},auto),Object.keys(SPECIES).map(k=>h('option',{value:k},SPECIES[k])));
   sel.value=SPECIES[cur]?cur:'';sel.onchange=()=>fn(sel.value);return sel;
 }
+async function saveGoalOrder(ids){
+  const all=goalsArr();const gs=ids.map(id=>all.find(g=>g.id===id)).filter(Boolean);
+  const orders=gs.map(g=>g.order||g.createdAt||0).sort((a,b)=>a-b);
+  try{for(let i=0;i<gs.length;i++){if((gs[i].order||gs[i].createdAt||0)!==orders[i]||!gs[i].order)await gcol(gs[i]).doc(gs[i].id).update({order:orders[i]||((i+1)*10)});}}catch(e){fail(e);}
+  renderView();
+}
+async function saveSubOrder(gid,ids){
+  const all=subsOf(gid);const ss=ids.map(id=>all.find(x=>x.id===id)).filter(Boolean);
+  const orders=ss.map(x=>x.order||x.createdAt||0).sort((a,b)=>a-b);
+  try{for(let i=0;i<ss.length;i++){if((ss[i].order||ss[i].createdAt||0)!==orders[i]||!ss[i].order)await col('subgoals').doc(ss[i].id).update({order:orders[i]||((i+1)*10)});}}catch(e){fail(e);}
+  renderView();
+}
 function viewMal(){
   const p=perm();
   if(!S.loaded.goals||!S.loaded.subgoals||!S.loaded.tasks)return h('p',{class:'muted'},'Lastar …');
@@ -2253,7 +2266,7 @@ function viewMal(){
   let gs=goalsArr();
   const fin=g=>!!g.done;
   gs=gs.filter(g=>f==='alle'?true:f==='ferdige'?fin(g):f==='mine'?(!fin(g)&&(g.assignee===S.uid||subsOf(g.id).some(s=>s.assignee===S.uid&&!s.done))):!fin(g));
-  gs.sort((a,b)=>(a.due||'9').localeCompare(b.due||'9')||(a.createdAt||0)-(b.createdAt||0));
+  gs.sort((a,b)=>(a.order||a.createdAt||0)-(b.order||b.createdAt||0));
   const filt=h('div',{class:'chips-f'},[['opne','Opne'],['mine','Mine'],['ferdige','Ferdige'],['alle','Alle']].filter(([k])=>k!=='mine'||S.active!==PRIV).map(([k,l])=>
     h('button',{class:'fc',type:'button','aria-pressed':String(f===k),onclick:()=>{S.goalFilter=k;renderView();}},l)));
   const head=h('div',{class:'mal-h'},h('h2',null,hb('target','orange'),'Mål'),filt);
@@ -2262,7 +2275,7 @@ function viewMal(){
     :h('div',null,h('button',{class:'btn',type:'button',onclick:()=>{S.ui.gform=true;renderView();setTimeout(()=>{const e=document.getElementById('gf-t');if(e)e.focus();},30);}},icon('plus'),'Mål'));
   const cards=gs.map(g=>{
     const subs=subsOf(g.id);const d=subs.filter(x=>x.done).length;const pct=subs.length?Math.round(d/subs.length*100):(g.done?100:0);
-    const rows=subs.map(x=>h('div',{class:'r sub'+(x.done?' is-done':'')},
+    const rows=subs.map(x=>h('div',{class:'r sub'+(x.done?' is-done':''),dataset:{id:x.id}},
       h('input',{type:'checkbox','aria-label':'Ferdig',checked:!!x.done,disabled:!p.write,onchange:ev=>toggleSub(x.id,ev.target.checked)}),
       h('div',{class:'t'},h('button',{type:'button',class:'link-t ed',onclick:()=>openGoalModal(Object.assign({_kind:'sub'},x))},h('span',{class:'tl'},x.title),icon('edit',14)),
         h('div',{class:'s row',style:'gap:8px'},metaBits(x))),
@@ -2272,7 +2285,7 @@ function viewMal(){
     const subAdd=!p.write?null:sf
       ?h('div',{class:'mk-box'},formRow('sf'+g.id,'Kva er delmålet?',(inp,due,who)=>addSub(g.id,inp,due,who),()=>{S.ui.sform=null;renderView();}))
       :h('div',null,h('button',{class:'btn sm',type:'button',onclick:()=>{S.ui.sform=g.id;renderView();setTimeout(()=>{const e=document.getElementById('sf'+g.id+'-t');if(e)e.focus();},30);}},icon('plus'),'delmål'));
-    return h('section',{class:'card goal'+(g.done?' g-done':'')},
+    return h('section',{class:'card goal'+(g.done?' g-done':''),dataset:{id:g.id}},
       h('h3',null,
         h('input',{type:'checkbox','aria-label':'Målet er ferdig',checked:!!g.done,disabled:!p.write,onchange:ev=>setGoalDone(g,ev.target.checked)}),
         h('button',{type:'button',class:'link-t gt ed',onclick:()=>openGoalModal(Object.assign({_kind:'goal'},g))},g.title,icon('edit',16)),
@@ -2281,10 +2294,11 @@ function viewMal(){
           canDel(g)?h('button',{class:'btn ghost sm',type:'button',onclick:()=>delGoal(g)},icon('trash',14),'Slett'):null)),
       h('div',{class:'bar'},h('i',{style:'width:'+pct+'%'})),
       h('p',{class:'s muted',style:'margin:6px 0 8px'},g.forest===false?'Dette målet har ingen skog.':(subs.length?d+' av '+subs.length+' delmål ferdige · '+pct+' % · ein skog med '+subs.length+' tre':'Ingen delmål enno. Utan delmål blir målet eitt tre i skogen.')),
-      rows.length?h('div',{class:'rows'},rows):null,
+      rows.length?(()=>{const rw=h('div',{class:'rows'},rows);if(p.write&&rows.length>1)enableReorder(rw,ids=>saveSubOrder(g.id,ids));return rw;})():null,
       subAdd);
   });
-  const el=h('div',{class:'ov-wrap'},head,addBox,cards.length?cards:h('p',{class:'empty'},f==='opne'?'Ingen opne mål.':'Ingenting her.'));
+  const glist=h('div',{class:'goal-list'},cards);if(p.write&&cards.length>1)enableReorder(glist,saveGoalOrder);
+  const el=h('div',{class:'ov-wrap'},head,addBox,cards.length?glist:h('p',{class:'empty'},f==='opne'?'Ingen opne mål.':'Ingenting her.'),(p.write&&cards.length>1)?h('p',{class:'note'},'Hald inne på eit mål eller delmål og dra for å endre rekkefølgja.'):null);
   hydrate(el);return el;
 }
 
@@ -2421,8 +2435,8 @@ function enableReorder(list,onDone){
     if(!st)return;
     if(!st.on){if(Math.hypot(e.clientX-st.x,e.clientY-st.y)>8){clearTimeout(st.t);st=null;}return;}
     e.preventDefault();
-    const t=document.elementFromPoint(e.clientX,e.clientY);const over=t&&t.closest?t.closest('[data-id]'):null;
-    if(over&&over!==st.el&&over.parentNode===list){const r=over.getBoundingClientRect();
+    let over=document.elementFromPoint(e.clientX,e.clientY);while(over&&over.parentNode!==list)over=over.parentNode;
+    if(over&&over.dataset&&over.dataset.id&&over!==st.el){const r=over.getBoundingClientRect();
       const after=list.classList.contains('dgrid')?(e.clientX>r.left+r.width/2):(e.clientY>r.top+r.height/2);
       list.insertBefore(st.el,after?over.nextSibling:over);st.moved=true;}
   });
@@ -2944,7 +2958,7 @@ setInterval(()=>{document.querySelectorAll('.now-line').forEach(el=>{const n=new
 
 /* ---------- skog: eit tre for kvart ferdige kapittel ---------- */
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const SPECIES={lauv:'Lauvtre',gran:'Gran',kirsebaer:'Kirsebærtre',bjork:'Bjørk'};
+const SPECIES={lauv:'Lauvtre',gran:'Gran',kirsebaer:'Kirsebærtre',bjork:'Bjørk',blanda:'Ulike tre (blanda)'};
 const SP_COL={lauv:'#8ED08F',gran:'#5FB083',kirsebaer:'#FFB6CB',bjork:'#CFEB8E'};
 function bkEff(){const o=Object.assign({},S.data.books);
   goalsArr().forEach((g,i)=>{if(g.forest===false)return;const subs=subsOf(g.id);const t=String(g.title||'Mål');
@@ -3084,7 +3098,8 @@ function forestSvg(st){
   // tre og tomme plantestader, bak til framme
   const sorted=lay.slots.slice().sort((a,b)=>a.y-b.y);let newIdx=0;const doneKeys=chEff();
   sorted.forEach(sl=>{
-    const done=!!doneKeys[sl.key];const sbg=sl.book.subs&&S.data.subgoals[sl.book.subs[sl.n-1]];const sp=(sbg&&SPECIES[sbg.species]?sbg.species:sl.book.species)||'lauv';
+    const done=!!doneKeys[sl.key];const sbg=sl.book.subs&&S.data.subgoals[sl.book.subs[sl.n-1]];let sp=(sbg&&SPECIES[sbg.species]?sbg.species:sl.book.species)||'lauv';
+    if(sp==='blanda')sp=['lauv','kirsebaer','bjork','gran'][Math.floor(rng('mx'+sl.seed)()*4)];
     const label=esc((sl.book.short||sl.book.title||'Bok')+' kapittel '+sl.n+(done?', ferdig':', ikkje planta. Trykk for å plante'));
     let inner;
     if(done){const isNew=!sk.seen.has(sl.key);const delay=isNew?Math.min(newIdx++*45,1400):0;
