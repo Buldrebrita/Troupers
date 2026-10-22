@@ -359,6 +359,13 @@ button.crumb:not(:disabled):hover{background:var(--surface-2);text-decoration:un
 .mini-h .icon-btn{width:28px;height:28px}
 .mini-g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
 .mini-g .mh{font:500 10px var(--f-mono);color:var(--muted);padding:4px 0;text-transform:uppercase}
+.form [hidden],.row[hidden],label[hidden]{display:none!important}
+.md-box summary{cursor:pointer;color:var(--ink);padding:4px 0}
+.md-head{display:flex;align-items:center;justify-content:space-between;margin:4px 0}
+.md-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}.md-wd{text-align:center;font-size:12px;color:var(--muted)}
+.md-d{border:0;background:none;aspect-ratio:1;border-radius:50%;font:inherit;font-size:14px;color:var(--ink);padding:0;cursor:pointer}
+.md-d.out{color:var(--muted);opacity:.55}.md-d:hover{background:var(--surface-2)}
+.md-d.sel{background:var(--accent,#7A56C2);color:#fff;opacity:1}.md-d.main{box-shadow:inset 0 0 0 2px var(--accent,#7A56C2);cursor:default}
 .mini-d{border:0;background:none;aspect-ratio:1;border-radius:50%;font-size:12px;position:relative;display:grid;place-items:center;padding:0;color:var(--ink)}
 .mini-d.out{color:var(--muted);opacity:.65}
 .mini-d:hover{background:var(--surface-2)}
@@ -3129,11 +3136,31 @@ function openEventModal(ev,def){
   const title=h('input',{class:'ttl-in',id:'em-title',required:true,maxlength:'140',placeholder:'Legg til tittel',value:src.title||'','aria-label':'Tittel'});
   const date=h('input',{class:'inp',id:'em-date',type:'date',required:true,value:src.date,'aria-label':'Dato'});
   const allDay=h('input',{type:'checkbox',id:'em-all',checked:!src.time});
-  const t1=h('input',{class:'inp',id:'em-t1',type:'time',value:src.time||'09:00','aria-label':'Frå'});
-  const t2=h('input',{class:'inp',id:'em-t2',type:'time',value:src.endTime||(src.time?'':'10:00'),'aria-label':'Til'});
+  const tl=h('datalist',{id:'em-tl15'},Array.from({length:96},(_,i)=>h('option',{value:pad(Math.floor(i/4))+':'+pad((i%4)*15)})));
+  const t1=h('input',{class:'inp',id:'em-t1',type:'time',step:'900',list:'em-tl15',value:src.time||'09:00','aria-label':'Frå'});
+  const t2=h('input',{class:'inp',id:'em-t2',type:'time',step:'900',list:'em-tl15',value:src.endTime||(src.time?'':'10:00'),'aria-label':'Til'});
   const d2=h('input',{class:'inp',id:'em-d2',type:'date',value:src.endDate||'','aria-label':'Til og med'});
-  const timeRow=h('div',{class:'row',style:'flex-wrap:nowrap'},t1,h('span',{class:'muted'},'–'),t2);
+  const timeRow=h('div',{class:'row',style:'flex-wrap:nowrap'},t1,h('span',{class:'muted'},'–'),t2,tl);
   const endRow=h('label',{class:'lbl'},'Til og med (valfritt)',d2);
+  const extra=new Set();
+  const multi=(()=>{let vm=parseYmd(src.date||todayS());vm=new Date(vm.getFullYear(),vm.getMonth(),1);
+    const box=h('details',{class:'md-box'},h('summary',null,'Kopier til fleire datoar'));
+    const info=h('p',{class:'note'},'Trykk på datoane du vil lage same hending på.');const cnt=h('span',{class:'muted'},'');
+    const grid=h('div',{class:'md-grid'});const head=h('div',{class:'md-head'});
+    const draw=()=>{
+      head.replaceChildren(h('button',{class:'icon-btn',type:'button','aria-label':'Førre månad',onclick:()=>{vm=new Date(vm.getFullYear(),vm.getMonth()-1,1);draw();}},icon('chev-l',16)),
+        h('b',null,MONTHS[vm.getMonth()]+' '+vm.getFullYear()),
+        h('button',{class:'icon-btn',type:'button','aria-label':'Neste månad',onclick:()=>{vm=new Date(vm.getFullYear(),vm.getMonth()+1,1);draw();}},icon('chev-r',16)));
+      grid.replaceChildren(...DAYS_SHORT.map(d=>h('span',{class:'md-wd'},d)));
+      const first=ymd(vm);const st=parseYmd(weekStart(first));
+      for(let i=0;i<42;i++){const d=new Date(st.getFullYear(),st.getMonth(),st.getDate()+i);const k=ymd(d);const main=k===date.value;
+        grid.append(h('button',{type:'button',class:'md-d'+(d.getMonth()!==vm.getMonth()?' out':'')+(extra.has(k)?' sel':'')+(main?' main':''),'aria-pressed':String(extra.has(k)),title:main?'Hovuddatoen':'',
+          onclick:()=>{if(main)return;if(extra.has(k))extra.delete(k);else extra.add(k);draw();}},String(d.getDate())));}
+      cnt.textContent=extra.size?extra.size+' ekstra '+(extra.size===1?'dato':'datoar')+' valde':'';
+      const clr=extra.size?h('button',{class:'btn ghost sm',type:'button',onclick:()=>{extra.clear();draw();}},'Fjern alle'):null;
+      info.replaceChildren('Trykk på datoane du vil lage same hending på. ',cnt,' ',clr||'');
+    };
+    draw();box.append(info,head,grid);date.addEventListener('change',draw);return box;})();
   const sync=()=>{timeRow.hidden=allDay.checked;endRow.hidden=!allDay.checked;};
   allDay.addEventListener('change',sync);sync();
   t1.addEventListener('change',()=>{const a=toMin(t1.value),b=toMin(t2.value);if(a!=null&&(b==null||b<=a))t2.value=hhmm(Math.min(a+60,23*60+59));});
@@ -3162,13 +3189,17 @@ function openEventModal(ev,def){
     try{
       if(isNew){await col('events').add(Object.assign({createdBy:S.uid,createdAt:Date.now()},data));logAct('kalender','la inn hendinga «'+t+'» ('+fmtShort(data.date)+')','kalender');}
       else await col('events').doc(ev.id).update(data);
+      if(extra.size){const span=data.endDate?Math.round((parseYmd(data.endDate)-parseYmd(data.date))/864e5):0;
+        for(const k of Array.from(extra).sort()){if(k===data.date)continue;
+          await col('events').add(Object.assign({createdBy:S.uid,createdAt:Date.now()},data,{date:k,endDate:span?addDays(k,span):''}));}
+        logAct('kalender','kopierte hendinga «'+t+'» til '+extra.size+' datoar','kalender');toast('Hendinga er kopiert til '+extra.size+' '+(extra.size===1?'dato':'datoar')+'.');}
       if(mem.length){const before=new Set(isNew?[]:(inv0||mem));
         for(const u of data.invited)if(u!==S.uid&&!before.has(u))sendNotif(S.active,u,'hending','Ny hending: '+t+' ('+fmtShort(data.date)+(data.time?' kl. '+data.time:'')+')','kalender');}
       S.cal.lastColor=color;S.cal.sel=data.date;closeModal();renderView();
     }catch(er){fail(er);}}},
     title,
     h('div',{class:'row'},date,h('label',{class:'row',style:'gap:6px;color:var(--muted);font-size:14px'},allDay,'Heile dagen')),
-    timeRow,endRow,attBox,h('div',{class:'lbl'},'Farge',sw),h('label',{class:'lbl'},'Merknad',note),
+    timeRow,endRow,multi,attBox,h('div',{class:'lbl'},'Farge',sw),h('label',{class:'lbl'},'Merknad',note),
     (!isNew)?rsvpRow(ev):null,
     h('div',{class:'row'},
       (!isNew&&canDel(ev))?h('button',{class:'btn danger',type:'button',style:'margin-right:auto',onclick:async()=>{
