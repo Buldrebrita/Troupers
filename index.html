@@ -3109,6 +3109,7 @@ function openEmbed(it){
     v.stage.append(h('div',{class:'fv-blocked'},h('h3',null,'Denne Claude-artefakten kan ikkje visast her'),
       h('p',null,'Lenka er ei privat lenke til claude.ai, og Claude lèt ikkje private sider bli viste inne i andre nettsider. Gjer slik for å få han inn i Troupers:'),
       h('ol',null,h('li',null,'Opne artefakten i Claude og trykk «Publiser» (eller «Del»).'),h('li',null,'Kopier den offentlege lenka (ho startar med claude.ai/public/artifacts/… eller claude.site/…).'),h('li',null,'Legg inn den lenka her i staden.')),
+      h('p',null,'Er det ei presentasjon? Då er det enklast å eksportere ho frå Claude som PDF eller PowerPoint og laste fila opp under Filer. Då kan du vise ho her og trykke «Presenter».'),
       h('a',{class:'btn primary',href,target:'_blank',rel:'noopener noreferrer'},'Opne artefakten i ny fane')));return;}}catch(_){}
   fr=h('iframe',{src,title:it.title||'Lenke',class:'fv-fr',allow:'fullscreen; autoplay; clipboard-write',allowfullscreen:true});
   const isCl=/(^|\.)claude\.(ai|site)$/.test((()=>{try{return new URL(href).hostname;}catch(_){return '';}})());
