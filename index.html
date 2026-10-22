@@ -2538,19 +2538,22 @@ function embedUrl(u){
     if(/(^|\.)canva\.com$/.test(x.hostname)){const mm=x.pathname.match(/\/design\/([^/]+)(?:\/([^/]+))?/);
       if(mm&&mm[2]&&mm[2]!=='view'&&mm[2]!=='edit'&&mm[2]!=='watch')return 'https://www.canva.com/design/'+mm[1]+'/'+mm[2]+'/view?embed';
       if(mm)return 'https://www.canva.com/design/'+mm[1]+'/view?embed';}
+    if(/docs\.google\.com$/.test(x.hostname)){const g=x.pathname.match(/^\/(document|spreadsheets)\/d\/([^/]+)/);
+      if(g)return 'https://docs.google.com/'+g[1]+'/d/'+g[2]+'/edit?rm=minimal&embedded=true';}
     if(/docs\.google\.com$/.test(x.hostname)&&/\/presentation\//.test(x.pathname))return u.replace(/\/(edit|pub|view)[^/]*$/,'/embed').replace(/\/embed$/,'/embed?start=false&loop=false');
     return u;}catch(_){return u;}
 }
 function openEmbed(it){
   const href=safeUrl(it.url);if(!href){toast('Ugyldig adresse.','bad');return;}
   const src=embedUrl(href);
-  const v=fvOpen(it.title||'Lenke',{presentable:true,actions:[h('a',{class:'btn sm',href,target:'_blank',rel:'noopener noreferrer'},'Opne i ny fane')]});
-  const fr=h('iframe',{src,title:it.title||'Lenke',class:'fv-fr',allow:'fullscreen; autoplay; clipboard-write',allowfullscreen:true});
+  let fr=null;
+  const v=fvOpen(it.title||'Lenke',{presentable:true,actions:[h('button',{class:'btn sm',type:'button',title:'Last inn nyaste versjon frå lenka',onclick:()=>{if(fr){const u=fr.src;fr.src='about:blank';setTimeout(()=>{fr.src=u;},80);toast('Lastar inn nyaste versjon …');}}},'↻ Synk'),h('a',{class:'btn sm',href,target:'_blank',rel:'noopener noreferrer'},'Opne i ny fane')]});
+  fr=h('iframe',{src,title:it.title||'Lenke',class:'fv-fr',allow:'fullscreen; autoplay; clipboard-write',allowfullscreen:true});
   const isCv=/(^|\.)canva\.(com|link)$/.test((()=>{try{return new URL(href).hostname;}catch(_){return '';}})());
   v.stage.append(fr,h('p',{class:'fv-note'},isCv?'Viser ikkje Canva-presentasjonen? Trykk Del → «Vis»-lenke i Canva, sørg for at alle med lenka kan sjå, og legg inn den lenka (ikkje canva.link). Eller bruk «Opne i ny fane».':'Viser ikkje sida seg? Då blokkerer nettstaden innbygging. Bruk «Opne i ny fane».'));
 }
 async function openFile(it){
-  const v=fvOpen(it.title||'Fil',{});
+  const v=fvOpen(it.title||'Fil',{actions:[h('button',{class:'btn sm',type:'button',title:'Hent nyaste versjon av fila',onclick:()=>{toast('Hentar nyaste versjon …');openFile(Object.assign({},it,S.data.items[it.id]||{},{id:it.id}));}},'↻ Synk')]});
   v.stage.append(h('p',{class:'muted',style:'padding:30px;text-align:center'},'Lastar fila …'));
   try{
     const blob=await fileBlob(it);const url=URL.createObjectURL(blob);FV&&FV.urls.push(url);let m=it.mime||'';const ex=extOf(it.title);
